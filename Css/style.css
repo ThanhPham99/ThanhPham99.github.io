@@ -44,9 +44,12 @@ header{
 .about-me li{
     font-size: 2rem;
     font-family: 'UTM Azuki Regular';
-    padding-left: 10rem;
+    padding: 0 1rem 0 3rem;
 
 }
 .about-me li:last-child{
     margin-bottom: 5rem;
+}
+@media only screen and (max-width: 600px) {
+    html{ font-size: 8px;}
 }
