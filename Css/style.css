@@ -10,6 +10,7 @@ body{
 header{
     background: url(../Images/headerBackground.jpg);
     background-position: bottom;
+    background-size: cover;
     width: 100%;
     height: 100vh;
 }
