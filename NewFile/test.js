@@ -1,3 +1,8 @@
-var fs = require('fs');
-var text = fs.readFileSync('meo.txt',{encoding: 'utf-8'});
-console.log(text);
+const wait = () => new Promise((resolve, reject) => {
+    setTimeout(resolve, 1000)
+    })
+    wait().then(() => {
+    console.log('I promised to run after 1s')
+    return wait()
+    })
+    .then(() => console.log('I promised to run after 2s'))
