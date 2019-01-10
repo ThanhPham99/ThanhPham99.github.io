@@ -4,8 +4,8 @@ html{
 body,p{
     margin: 0;
 }
-body{
-  margin: 0;
+h1,h2,h3{
+  text-align: center;
 }
 * {
     box-sizing: border-box;
@@ -42,6 +42,7 @@ header{
 .timeline {
   position: relative;
   margin: 0 auto;
+  border-bottom: 0.5rem solid #fff;
 }
 .timeline-title{
   color: rgb(0, 8, 117);
@@ -130,6 +131,41 @@ header{
   border-radius: 6px;
 }
 
+.about-me{
+  color: #fff;
+  width: 80%;
+  margin: 1rem auto 0 auto;
+  padding-bottom: 2rem;
+}
+.about-content{
+  display: flex;
+  justify-content: space-between;
+}
+.favorite,.contact,.knowledge{
+  border: 0.1rem solid #fff;
+  width: 33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 12, 68, 0.568);
+  padding-bottom: 2rem;
+  text-shadow: 0.3rem 0.2rem 0.3rem #000;
+}
+.list a{
+  text-decoration: none;
+  color: aqua;
+}
+.list a:visited{
+  color: rgb(226, 247, 40);
+}
+footer{
+  background: #000;
+  padding: 1rem;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: center;
+}
 @media screen and (max-width: 600px) {
   .timeline::after {
   left: 31px;
@@ -153,5 +189,12 @@ header{
   }
   .right {
   left: 0%;
+  }
+  .about-content{
+    flex-direction: column;
+  }
+  .favorite,.contact,.knowledge{
+    width: 100%;
+    margin: 2rem auto;
   }
 }
