@@ -12,18 +12,22 @@ body{
     box-sizing: border-box;
   }
 header{
-  background: url('https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/GfRLKaE/videoblocks-digital-technology-background-pack_rxoqytdfm_thumbnail-full09.png');
+  background-image: url('https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/GfRLKaE/videoblocks-digital-technology-background-pack_rxoqytdfm_thumbnail-full09.png');
   background-size: cover;
   font-family: monospace;
+  height: 20rem;
+  position: relative;
 }
 .header-content{
-  height: 20rem;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
 }
 .header-content h1{
   color: #fff;
-  text-shadow: 0.3rem 0.2rem #000;
+  text-shadow: 0.3rem 0.2rem 0.3rem #000;
 }
 .header-content img{
   max-width: 10rem;
