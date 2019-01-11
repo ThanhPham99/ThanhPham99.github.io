@@ -1,41 +1,44 @@
-html{
-    font-size: 14px;
+html {
+  font-size: 14px;
 }
-body,p{
-    margin: 0;
+body,
+p {
+  margin: 0;
 }
-h1,h2,h3{
+h1,
+h2,
+h3 {
   text-align: center;
 }
 * {
-    box-sizing: border-box;
-  }
-header{
-  background-image: url('https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/GfRLKaE/videoblocks-digital-technology-background-pack_rxoqytdfm_thumbnail-full09.png');
+  box-sizing: border-box;
+}
+header {
+  background-image: url("https://d2v9y0dukr6mq2.cloudfront.net/video/thumbnail/GfRLKaE/videoblocks-digital-technology-background-pack_rxoqytdfm_thumbnail-full09.png");
   background-size: cover;
   font-family: monospace;
   height: 13rem;
   position: relative;
 }
-.header-content{
+.header-content {
   display: flex;
   align-items: center;
   position: absolute;
   bottom: 1rem;
   left: 1rem;
 }
-.header-content h1{
+.header-content h1 {
   color: #fff;
   text-shadow: 0.3rem 0.2rem 0.3rem #000;
 }
-.header-content img{
+.header-content img {
   max-width: 10rem;
   border: 0.3rem solid #fff;
   border-radius: 50%;
   margin: 0.5rem;
 }
-.content-container{
-  background: url('http://sf.co.ua/13/06/wallpaper-2864492.jpg');  
+.content-container {
+  background: url("http://sf.co.ua/13/06/wallpaper-2864492.jpg");
   background-size: cover;
   background-position: center;
 }
@@ -44,7 +47,7 @@ header{
   margin: 0 auto;
   border-bottom: 0.5rem solid #fff;
 }
-.timeline-title{
+.timeline-title {
   color: rgb(0, 8, 117);
   font-weight: bold;
   font-size: 1.5rem;
@@ -56,7 +59,7 @@ header{
   border-top: 0.1rem solid #000;
 }
 .timeline::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 6px;
   background-color: white;
@@ -74,7 +77,7 @@ header{
 }
 
 .container::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 25px;
   height: 25px;
@@ -131,17 +134,19 @@ header{
   border-radius: 6px;
 }
 
-.about-me{
+.about-me {
   color: #fff;
   width: 80%;
   margin: 1rem auto 0 auto;
   padding-bottom: 2rem;
 }
-.about-content{
+.about-content {
   display: flex;
   justify-content: space-between;
 }
-.favorite,.contact,.knowledge{
+.favorite,
+.contact,
+.knowledge {
   border: 0.1rem solid #fff;
   width: 33%;
   display: flex;
@@ -151,14 +156,14 @@ header{
   padding-bottom: 2rem;
   text-shadow: 0.3rem 0.2rem 0.3rem #000;
 }
-.list a{
+.list a {
   text-decoration: none;
   color: aqua;
 }
-.list a:visited{
+.list a:visited {
   color: rgb(226, 247, 40);
 }
-footer{
+footer {
   background: #000;
   padding: 1rem;
   color: #fff;
@@ -168,32 +173,35 @@ footer{
 }
 @media screen and (max-width: 600px) {
   .timeline::after {
-  left: 31px;
-  }
-  
-  .container {
-  width: 100%;
-  padding-left: 70px;
-  padding-right: 25px;
-  }
-  
-  .container::before {
-  left: 60px;
-  border: medium solid white;
-  border-width: 10px 10px 10px 0;
-  border-color: transparent white transparent transparent;
+    left: 31px;
   }
 
-  .left::after, .right::after {
-  left: 15px;
+  .container {
+    width: 100%;
+    padding-left: 70px;
+    padding-right: 25px;
+  }
+
+  .container::before {
+    left: 60px;
+    border: medium solid white;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent white transparent transparent;
+  }
+
+  .left::after,
+  .right::after {
+    left: 15px;
   }
   .right {
-  left: 0%;
+    left: 0%;
   }
-  .about-content{
+  .about-content {
     flex-direction: column;
   }
-  .favorite,.contact,.knowledge{
+  .favorite,
+  .contact,
+  .knowledge {
     width: 100%;
     margin: 2rem auto;
   }
