@@ -173,7 +173,7 @@ footer {
 }
 @media only screen and (max-width:600px) {
   html{
-    font-size: 6.149341142px;
+    font-size: 10px;
   }
   .timeline::after {
     left: 31px;
@@ -207,5 +207,8 @@ footer {
   .knowledge {
     width: 100%;
     margin: 2rem auto;
+  }
+  .container-left p, .container-right p{
+    text-align: center;
   }
 }
