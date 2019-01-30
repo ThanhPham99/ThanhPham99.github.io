@@ -9,6 +9,7 @@ ul {
 }
 
 .container {
+    z-index: 99;
     width: 100%;
     height: 100vh;
     background: rgb(0, 0, 0);
@@ -18,11 +19,12 @@ ul {
 ul {
     display: flex;
     justify-content: space-around;
+    align-items: center;
     background: rgba(255, 255, 255, 0.096);
 }
 
 ul li {
-    padding: 1% 15%;
+    padding: 1rem 5rem;
     list-style: none;
     overflow: hidden;
 }
@@ -41,6 +43,7 @@ ul li:hover {
 }
 
 .content {
+    z-index: -1;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -61,7 +64,7 @@ ul li:hover {
 .iv-btn {
     background: rgb(255, 245, 112);
     margin: 1%;
-    padding: 1% 3%;
+    padding: 0.5rem 1rem;
     border: 0.5rem solid rgb(61, 61, 61);
     border-radius: 2rem;
 }
@@ -73,7 +76,18 @@ ul li:hover {
 }
 
 .iv-btn:hover>a {
-    color: red;
     font-size: 120%;
     text-decoration: underline;
+}
+
+@media only screen and (max-width: 900px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    html {
+        font-size: 10px;
+    }
 }
