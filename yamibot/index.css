@@ -94,6 +94,10 @@ ul li:hover {
     align-items: center;
 }
 
+.intro-main img {
+    width: 80%;
+}
+
 .intro-main p {
     text-align: center;
 }
