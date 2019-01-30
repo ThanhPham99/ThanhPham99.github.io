@@ -1,5 +1,7 @@
 html {
     font-family: "Courier New", Courier, monospace;
+    background: rgb(0, 0, 0);
+    color: azure;
 }
 
 body,
@@ -12,7 +14,6 @@ ul {
     z-index: 99;
     width: 100%;
     height: 100vh;
-    background: rgb(0, 0, 0);
     position: relative;
 }
 
@@ -78,6 +79,23 @@ ul li:hover {
 .iv-btn:hover>a {
     font-size: 120%;
     text-decoration: underline;
+    transition: all 0.25s;
+}
+
+.intro-content {
+    padding: 1% 5%;
+}
+
+.intro-main {
+    margin: 5rem 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.intro-main p {
+    text-align: center;
 }
 
 @media only screen and (max-width: 900px) {
