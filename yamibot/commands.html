@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" href="./c6960d0f582f079c95a0790016f31f4ae6bdb208_00.jpg" type="image/gif" sizes="16x16">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="./index.css" />
+    <title>Yami-chan</title>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="./index.html">Home</a></li>
+            <li><a href="./intro.html">Intro</a></li>
+            <li class="active"><a href="./commands.html">Commands</a></li>
+        </ul>
+    </nav>
+    <div class="tab">
+        <button class="tablinks" onclick="openCity(event, 'cmds')" id="defaultOpen">Cmds</button>
+        <button class="tablinks" onclick="openCity(event, 'actions')">Actions</button>
+        <button class="tablinks" onclick="openCity(event, 'fun')">Fun</button>
+    </div>
+
+    <div id="cmds" class="tabcontent">
+        <table>
+            <tr>
+                <th>Command</th>
+                <th>Describe</th>
+            </tr>
+            <tr>
+                <td>>avatar @user</td>
+                <td>Display an user avatar</td>
+            </tr>
+            <tr>
+                <td>>userinfo @user</td>
+                <td>Display metioned user's info</td>
+            </tr>
+            <tr>
+                <td>>profile</td>
+                <td>Display your info</td>
+            </tr>
+            <tr>
+                <td>>svinfo</td>
+                <td>Display your server info</td>
+            </tr>
+            <tr>
+                <td>>report @user [reason]</td>
+                <td>Report an user, your report also send to report channel</td>
+            </tr>
+            <tr>
+                <td>>chname [newname]</td>
+                <td>Change your current channel's name (require MANAGE_MESSAGES permission)</td>
+            </tr>
+            <tr>
+                <td>>createchannel [newchannelname]</td>
+                <td>Create a new channel (require MANAGE_MESSAGES permission)</td>
+            </tr>
+            <tr>
+                <td>>kickuser @user</td>
+                <td>Kick an user from your server (require KICK_MEMBERS permission)</td>
+            </tr>
+            <tr>
+                <td>>ban @user</td>
+                <td>Ban an user from your server (require MANAGE_MESSAGES permission)</td>
+            </tr>
+            <tr>
+                <td>>setrole @user [role]</td>
+                <td>Set role for an user(require MANAGE_ROLES permission)</td>
+            </tr>
+            <tr>
+                <td>>removerole @user [role]</td>
+                <td>Remove someone's role(require MANAGE_ROLES permission)</td>
+            </tr>
+            <tr>
+                <td>>mute @user [role]</td>
+                <td>Mute an user(require MANAGE_MESSAGES permission)</td>
+            </tr>
+            <tr>
+                <td>>help</td>
+                <td>Get command list link</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="actions" class="tabcontent">
+        <table>
+            <tr>
+                <td>>hug @user</td>
+                <td>Give an user a hug</td>
+            </tr>
+            <tr>
+                <td>>kick @user</td>
+                <td>Instanly give an user a kick</td>
+            </tr>
+            <tr>
+                <td>>kiss @user</td>
+                <td>Try to kiss an user</td>
+            </tr>
+            <tr>
+                <td>>slap @user</td>
+                <td>Slap an user</td>
+            </tr>
+            <tr>
+                <td>>wave @user</td>
+                <td>Wave an user</td>
+            </tr>
+            <tr>
+                <td>>RIP @user</td>
+                <td>RIP an user</td>
+            </tr>
+            <tr>
+                <td>>kukuku</td>
+                <td>Make a kukuku smile</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="fun" class="tabcontent">
+        <table>
+            <tr>
+                <td>>choose [option1|option2]</td>
+                <td>Randomly choose 1 of 2 options</td>
+            </tr>
+            <tr>
+                <td>>cat</td>
+                <td>Generate random cat</td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        function openCity(evt, tabsname) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabsname).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementById("defaultOpen").click();
+    </script>
+</body>
+
+</html>

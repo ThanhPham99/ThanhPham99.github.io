@@ -102,6 +102,71 @@ ul li:hover {
     text-align: center;
 }
 
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: rgb(255, 255, 255);
+    margin-top: 5%;
+    display: flex;
+    justify-content: space-around;
+}
+
+
+/* Style the buttons inside the tab */
+
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 1% 5%;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+
+/* Change background color of buttons on hover */
+
+.tab button:hover {
+    background-color: #ddd;
+}
+
+
+/* Create an active/current tablink class */
+
+.tab button.active {
+    background-color: rgba(71, 71, 71, 0.459);
+}
+
+
+/* Style the tab content */
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 3% 0;
+}
+
+td,
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 1.5rem 0.5rem;
+}
+
+tr:nth-child(even) {
+    background-color: #242424;
+}
+
 @media only screen and (max-width: 900px) {
     html {
         font-size: 12px;
