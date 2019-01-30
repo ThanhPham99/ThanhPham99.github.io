@@ -24,14 +24,14 @@ ul {
 }
 
 ul li {
-    padding: 1% 5%;
+    padding: 1rem 5rem;
     list-style: none;
+    overflow: hidden;
 }
 
 ul li a {
     text-decoration: none;
     color: aliceblue;
-    font-size: 1rem;
 }
 
 ul li:hover {
