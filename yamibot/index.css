@@ -95,7 +95,7 @@ ul li:hover {
 }
 
 .intro-main img {
-    width: 80%;
+    width: 100%;
 }
 
 .intro-main p {
@@ -105,9 +105,6 @@ ul li:hover {
 @media only screen and (max-width: 900px) {
     html {
         font-size: 12px;
-    }
-    .intro-main img {
-        width: 100%;
     }
 }
 
