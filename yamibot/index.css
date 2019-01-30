@@ -55,6 +55,7 @@ ul li:hover {
 .content img {
     border: 0.5rem solid rgb(61, 61, 61);
     border-radius: 50%;
+    width: 15rem;
 }
 
 .iv-btn {
