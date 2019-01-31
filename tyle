@@ -1,0 +1,128 @@
+[1mdiff --git a/count/newyearcount.html b/count/newyearcount.html[m
+[1mindex 1f7d22fe..ce2188f8 100644[m
+[1m--- a/count/newyearcount.html[m
+[1m+++ b/count/newyearcount.html[m
+[36m@@ -7,33 +7,116 @@[m
+     <meta http-equiv="X-UA-Compatible" content="ie=edge">[m
+     <title>Document</title>[m
+     <style>[m
+[31m-[m
+[32m+[m[32m        p {[m
+[32m+[m[32m            margin: 0;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        body {[m
+[32m+[m[32m            margin: 0;[m
+[32m+[m[32m            width: 100%;[m
+[32m+[m[32m            height: 100vh;[m
+[32m+[m[32m            background-image: url('./firework.jpg');[m
+[32m+[m[32m            background-size: cover;[m
+[32m+[m[32m            background-repeat: no-repeat;[m
+[32m+[m[32m            display: flex;[m
+[32m+[m[32m            justify-content: center;[m
+[32m+[m[32m            align-items: center;[m
+[32m+[m[32m            color: #fff;[m
+[32m+[m[32m            font-family: 'Courier New', Courier, monospace;[m
+[32m+[m[32m            font-weight: bold;[m
+[32m+[m[32m            font-size: 300%;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        #main-block {[m
+[32m+[m[32m            display: flex;[m
+[32m+[m[32m            justify-content: center;[m
+[32m+[m[32m            align-items: center;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        #block {[m
+[32m+[m[32m            padding: 3%;[m
+[32m+[m[32m            border: 5px solid aqua;[m
+[32m+[m[32m            border-radius: 1rem;[m
+[32m+[m[32m            margin: 1rem;[m
+[32m+[m[32m            background: rgba(0, 0, 0, 0.685);[m
+[32m+[m[32m            display: flex;[m
+[32m+[m[32m            flex-direction: column;[m
+[32m+[m[32m            justify-content: center;[m
+[32m+[m[32m            align-items: center;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        .block-2 {[m
+[32m+[m[32m            padding: 1rem;[m
+[32m+[m[32m            border: 3px solid rgb(255, 255, 255);[m
+[32m+[m[32m            margin: 1rem;[m
+[32m+[m[32m            background: rgb(0, 0, 0);[m
+[32m+[m[32m            display: flex;[m
+[32m+[m[32m            flex-direction: column;[m
+[32m+[m[32m            justify-content: center;[m
+[32m+[m[32m            align-items: center;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        #happynewyear {[m
+[32m+[m[32m            font-size: 150%;[m
+[32m+[m[32m            font-weight: bolder;[m
+[32m+[m[32m            border-color: coral;[m
+[32m+[m[32m        }[m
+     </style>[m
+ </head>[m
+ [m
+ <body>[m
+[31m-    <div class="count">[m
+[31m-        <div class="block">[m
+[32m+[m[32m    <div id="main-block">[m
+[32m+[m[32m        <div id="block">[m
+             <div class="block-2">[m
+                 <p id="days"></p>[m
+             </div>[m
+[32m+[m[32m            <p>days</p>[m
+         </div>[m
+[31m-        <div class="block">[m
+[32m+[m[32m        <div id="block">[m
+             <div class="block-2">[m
+                 <p id="hours"></p>[m
+             </div>[m
+[32m+[m[32m            <p>hours</p>[m
+         </div>[m
+[31m-        <div class="block">[m
+[32m+[m[32m        <div id="block">[m
+             <div class="block-2">[m
+                 <p id="mins"></p>[m
+             </div>[m
+[32m+[m[32m            <p>mins</p>[m
+         </div>[m
+[31m-        <div class="block">[m
+[32m+[m[32m        <div id="block">[m
+             <div class="block-2">[m
+                 <p id="secs"></p>[m
+             </div>[m
+[32m+[m[32m            <p>secs</p>[m
+         </div>[m
+     </div>[m
+[32m+[m[32m    <p id="happynewyear"></p>[m
+[32m+[m[32m    <script>[m
+[32m+[m[32m        var x = setInterval(function() {[m
+[32m+[m
+[32m+[m[32m            var thisTime = new Date().getTime(); //get current time (msecs)[m
+[32m+[m
+[32m+[m[32m            var Tet = new Date("Jan 31, 2019 11:15:00").getTime(); //get Tet time[m
+[32m+[m
+[32m+[m[32m            var countDown = Tet - thisTime; //get count time[m
+[32m+[m
+[32m+[m[32m            var days = Math.floor(countDown / (24 * 60 * 60 * 1000));[m
+[32m+[m[32m            var hours = Math.floor((countDown % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));[m
+[32m+[m[32m            var mins = Math.floor((countDown % (60 * 60 * 1000)) / (60 * 1000));[m
+[32m+[m[32m            var secs = Math.floor((countDown % (60 * 1000)) / 1000);[m
+[32m+[m
+[32m+[m[32m            document.getElementById("days").innerHTML = days;[m
+[32m+[m[32m            document.getElementById("hours").innerHTML = hours;[m
+[32m+[m[32m            document.getElementById("mins").innerHTML = mins;[m
+[32m+[m[32m            document.getElementById("secs").innerHTML = secs;[m
+[32m+[m[32m            if (countDown < 0) {[m
+[32m+[m[32m                clearInterval(x);[m
+[32m+[m[32m                document.getElementById("main-block").style.display = "none";[m
+[32m+[m[32m                document.getElementById("happynewyear").innerHTML = "Chúc mừng năm mới!";[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 1000);[m
+[32m+[m[32m    </script>[m
+ </body>[m
+ [m
+ </html>[m
+\ No newline at end of file[m
