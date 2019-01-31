@@ -7,6 +7,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
+        @font-face {
+            font-family: "thuphapthienan";
+            src: url('./UTM ThuPhap Thien An.ttf');
+        }
+        
         p {
             margin: 0;
         }
@@ -59,7 +64,7 @@
         
         #happynewyear {
             font-size: 180%;
-            font-family: "UTM ThuPhap Thien An";
+            font-family: "thuphapthienan";
             color: yellow;
             text-shadow: 3px 3px 3px rgb(117, 117, 117);
             font-weight: bolder;
@@ -113,7 +118,7 @@
 
             var thisTime = new Date().getTime(); //get current time (msecs)
 
-            var Tet = new Date("Jan 31, 2019 12:37:00").getTime(); //get Tet time
+            var Tet = new Date("Jan 31, 2019 12:40:00").getTime(); //get Tet time
 
             var countDown = Tet - thisTime; //get count time
 
