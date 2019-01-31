@@ -47,24 +47,40 @@
         
         .block-2 {
             padding: 1rem;
-            border: 3px solid rgb(255, 255, 255);
+            border: 3px solid rgb(100, 100, 100);
             margin: 1rem;
             background: rgb(0, 0, 0);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: rgb(205, 255, 129);
         }
         
         #happynewyear {
-            font-size: 150%;
+            font-size: 180%;
+            font-family: "UTM ThuPhap Thien An";
+            color: yellow;
+            text-shadow: 3px 3px 3px rgb(117, 117, 117);
             font-weight: bolder;
-            border-color: coral;
+        }
+        
+        @media only screen and (max-width: 900px) {
+            body {
+                height: auto;
+            }
+            #main-block {
+                flex-direction: column;
+            }
+            #block {
+                flex-direction: row;
+            }
         }
     </style>
 </head>
 
 <body>
+
     <div id="main-block">
         <div id="block">
             <div class="block-2">
@@ -97,7 +113,7 @@
 
             var thisTime = new Date().getTime(); //get current time (msecs)
 
-            var Tet = new Date("Jan 31, 2019 11:15:00").getTime(); //get Tet time
+            var Tet = new Date("Jan 31, 2019 12:49:00").getTime(); //get Tet time
 
             var countDown = Tet - thisTime; //get count time
 
@@ -113,7 +129,7 @@
             if (countDown < 0) {
                 clearInterval(x);
                 document.getElementById("main-block").style.display = "none";
-                document.getElementById("happynewyear").innerHTML = "Chúc mừng năm mới!";
+                document.getElementById("happynewyear").innerHTML = "Happy new year!";
             }
         }, 1000);
     </script>
