@@ -70,6 +70,15 @@
             font-weight: bolder;
         }
         
+        .wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 2;
+        }
+        
         @media only screen and (max-width: 900px) {
             html {
                 font-size: 12px;
@@ -115,31 +124,33 @@
             <p>secs</p>
         </div>
     </div>
+    <div class="wrapper"></div>
     <p id="happynewyear"></p>
     <script>
         var x = setInterval(function() {
 
-            var thisTime = new Date().getTime(); //get current time (msecs)
+                var thisTime = new Date().getTime(); //get current time (msecs)
 
-            var Tet = new Date("Jan 31, 2019 12:40:00").getTime(); //get Tet time
+                var Tet = new Date("Feb 5, 2019 00: 00: 00 ").getTime(); //get Tet time
 
-            var countDown = Tet - thisTime; //get count time
+                var countDown = Tet - thisTime; //get count time
 
-            var days = Math.floor(countDown / (24 * 60 * 60 * 1000));
-            var hours = Math.floor((countDown % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-            var mins = Math.floor((countDown % (60 * 60 * 1000)) / (60 * 1000));
-            var secs = Math.floor((countDown % (60 * 1000)) / 1000);
+                var days = Math.floor(countDown / (24 * 60 * 60 * 1000));
+                var hours = Math.floor((countDown % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                var mins = Math.floor((countDown % (60 * 60 * 1000)) / (60 * 1000));
+                var secs = Math.floor((countDown % (60 * 1000)) / 1000);
 
-            document.getElementById("days").innerHTML = days;
-            document.getElementById("hours").innerHTML = hours;
-            document.getElementById("mins").innerHTML = mins;
-            document.getElementById("secs").innerHTML = secs;
-            if (countDown < 0) {
-                clearInterval(x);
-                document.getElementById("main-block").style.display = "none";
-                document.getElementById("happynewyear").innerHTML = "Happy new year!";
-            }
-        }, 1000);
+                document.getElementById("days").innerHTML = days;
+                document.getElementById("hours").innerHTML = hours;
+                document.getElementById("mins").innerHTML = mins;
+                document.getElementById("secs").innerHTML = secs;
+                if (countDown < 0) {
+                    clearInterval(x);
+                    document.getElementById("main-block").style.display = "none";
+                    document.getElementById("happynewyear").innerHTML = "Happy new year!";
+                }
+            },
+            1000);
     </script>
 </body>
 
