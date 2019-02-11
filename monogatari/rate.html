@@ -23,10 +23,11 @@
             height: 100vh;
             margin: 0;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-around;
             align-items: center;
-            background: rgb(35, 36, 40);
-            background: radial-gradient(circle, rgba(35, 36, 40, 1) 0%, rgba(0, 0, 0, 1) 100%, rgba(0, 0, 0, 1) 100%);
+            background: rgb(163, 163, 163);
+            background: radial-gradient(circle, rgba(163, 163, 163, 1) 0%, rgba(255, 255, 255, 1) 100%, rgba(0, 0, 0, 1) 100%);
         }
         
         .best-girls,
@@ -53,11 +54,15 @@
             display: flex;
             background: #000000;
             width: 80%;
-            margin: 1rem;
+            margin-top: 1rem;
             box-sizing: border-box;
             align-items: center;
             color: #ffffff;
             padding: 0.5rem 1rem;
+        }
+        
+        .char-container:last-child {
+            margin-bottom: 1rem;
         }
         
         .char-container p {
@@ -66,27 +71,82 @@
         }
         
         .char-container h3 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             padding-right: 0.5rem;
         }
         
         .char-container img {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+        }
+        .title{
+            flex-basis: 100%;
+            background: #000000;
+            padding: 1rem 0;
+            color: #ffffff;
+            text-align: center;
+            font-size: 2rem;
         }
     </style>
 </head>
 
 <body>
+    <div class="title">Top 5 best & trash girls monogatari series</div>
     <div class="best-girls">
         <h2>Best Girls</h2>
         <div class="char-container">
             <h3>1</h3>
-            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/8/81/Mayoi_Owari3.jpg/revision/latest/top-crop/width/200/height/150?cb=20180103101821" alt="">
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/8/81/Mayoi_Owari3.jpg/revision/latest/top-crop/width/200/height/150?cb=20180103101821" alt="Hachikuji Mayoi">
             <p>Hachikuji Mayoi</p>
         </div>
+        <div class="char-container">
+            <h3>2</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/b/b9/Shinobu.png/revision/latest/top-crop/width/200/height/150?cb=20161221045011" alt="Kiss-Shot">
+            <p>Kiss-Shot(Shinobu Oshino)</p>
+        </div>
+        <div class="char-container">
+            <h3>3</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/a/ab/Yotsugi_profile.jpg/revision/latest/scale-to-width-down/350?cb=20120323005526" alt="Yotsugi Ononoki">
+            <p>Yotsugi Ononoki</p>
+        </div>
+        <div class="char-container">
+            <h3>4</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/2/2c/Ougiprofile.png/revision/latest/scale-to-width-down/350?cb=20161229051633" alt="Ougi Oshino">
+            <p>Ougi Oshino</p>
+        </div>
+        <div class="char-container">
+            <h3>5</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/d/d2/Izuko_gaen.jpg/revision/latest/scale-to-width-down/350?cb=20130805032811" alt="Izuko Gaen">
+            <p>Izuko Gaen</p>
+        </div>
     </div>
-    <div class="trash-girls"></div>
+    <div class="trash-girls">
+        <h2>Trash Girls</h2>
+        <div class="char-container">
+            <h3>1</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/1/13/Nadeko1.png/revision/latest/scale-to-width-down/350?cb=20161115034306" alt="Nadeko Sengoku">
+            <p>Nadeko Sengoku</p>
+        </div>
+        <div class="char-container">
+            <h3>2</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/b/be/Bakehane.png/revision/latest/scale-to-width-down/350?cb=20181125055426" alt="Tsubasa Hanekawa">
+            <p>Tsubasa Hanekawa</p>
+        </div>
+        <div class="char-container">
+            <h3>3</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/1/17/Sodachi_profile.png/revision/latest/scale-to-width-down/350?cb=20170424065922" alt="Sodachi Oikura">
+            <p>Sodachi Oikura</p>
+        </div>
+        <div class="char-container">
+            <h3>4</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/0/04/Hitagi_Rendezvous_1.jpg/revision/latest/scale-to-width-down/350?cb=20171229015129" alt="Hitagi Senjougahara">
+            <p>Hitagi Senjougahara</p>
+        </div>
+        <div class="char-container">
+            <h3>5</h3>
+            <img src="https://vignette.wikia.nocookie.net/bakemonogatari1645/images/1/17/Sodachi_profile.png/revision/latest/scale-to-width-down/350?cb=20170424065922" alt="Sodachi Oikura">
+            <p>Sodachi Oikura</p>
+        </div>
+    </div>
 </body>
 
 </html>
