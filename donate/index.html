@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Full page scroll</title>
+  <link rel="stylesheet" type="text/css" href="assets/stylesheet/full-page-scroll.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css" />
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Oleo+Script+Swash+Caps&display=swap');
+
+    * {
+      box-sizing: border-box;
+      font-family: "Open Sans";
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .section1 {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://wallpapercave.com/wp/wp5702056.jpg);
+    }
+
+    .section2 {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://wallpapercave.com/wp/wp9458013.jpg);
+    }
+
+    .section3 {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://wallpapercave.com/dwp2x/wp4088476.png);
+    }
+
+    section {
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .flex-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    section div {
+      font-style: normal;
+      text-align: center;
+    }
+
+    span {
+      font-size: 4em;
+      font-style: normal;
+      color: #fff;
+    }
+
+    .button {
+      background-color: #f2cf66;
+      border-bottom: 5px solid #d1b358;
+      text-shadow: 0px -2px #d1b358;
+      padding: 10px 40px;
+      border-radius: 10px;
+      font-size: 25px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .donate-content {
+      max-width: 60%;
+      max-height: 80%;
+    }
+
+    .donate-content img {
+      border-radius: 40px;
+    }
+
+    @media only screen and (orientation: landscape) {
+      .donate-content img {
+        height: 100%;
+      }
+
+      .donate-content {
+        max-height: 60%;
+      }
+    }
+
+    @media only screen and (orientation: portrait) {
+      .donate-content img {
+        width: 100%;
+      }
+
+      .donate-content {
+        max-width: 80%;
+      }
+    }
+
+    .donate-btn {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <main id='main' class="scroll-container">
+
+    <section class="section1 flex-box">
+      <div class="donate-content flex-box">
+        <img src="./assets/images/momo.png" alt="momo">
+        <a href="https://me.momo.vn/moevuive" target="_blank">
+          <button class="button-82-pushable donate-btn" role="button">
+            <span class="button-82-shadow"></span>
+            <span class="button-82-edge"></span>
+            <span class="button-82-front text">
+              Donate
+            </span>
+          </button>
+        </a>
+      </div>
+    </section>
+
+    <section class="section2 flex-box">
+      <div class="donate-content flex-box">
+        <img src="./assets/images/MB Bank.jpg" alt="MB Bank">
+      </div>
+    </section>
+
+    <section class="section3 flex-box">
+      <div class="donate-content flex-box">
+        <img src="./assets/images/PayPal.svg" alt="momo">
+        <a href="https://paypal.me/moepham" target="_blank">
+          <button class="button-82-pushable donate-btn" role="button">
+            <span class="button-82-shadow"></span>
+            <span class="button-82-edge"></span>
+            <span class="button-82-front text">
+              Donate
+            </span>
+          </button>
+        </a>
+      </div>
+    </section>
+
+  </main>
+  <script src="./assets/javascript/full-page-scroll.js"></script>
+  <script type="text/javascript">
+    new fullScroll({
+      mainElement: "main",
+      displayDots: true,
+      dotsPosition: "left",
+      animateTime: 0.7,
+      animateFunction: "ease",
+    });
+  </script>
+</body>
+
+</html>
