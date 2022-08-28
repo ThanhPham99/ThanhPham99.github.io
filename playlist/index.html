@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mòe's playlist</title>
+  <link rel="stylesheet" href="./public/css/main.css">
+</head>
+
+<body>
+  <header>
+    <h1 class="header-title">🎧 Mòe's playlist 🎧</h1>
+  </header>
+
+  <main>
+    <section class="list-song">
+    </section>
+  </main>
+
+  <script>
+    let page = 0
+    const itemsPerPage = 50
+    const songPages = []
+    const listSongElement = document.querySelector('.list-song')
+
+    const renderSong = (songInfo) => {
+      return `
+      <div class="song">
+        <div class="song-img"
+          style="background-image: url(${songInfo?.coverImage || 'https://content.instructables.com/ORIG/FDF/VKUF/HH11O1GR/FDFVKUFHH11O1GR.png?auto=webp&fit=bounds&frame=1&height=620&width=620'});"></div>
+        <div class="song-content">
+          <div class="song-info">
+            <h2>${songInfo?.name}</h2>
+            <span>${songInfo?.artist}</span>
+          </div>
+          <a href="${songInfo?.link}" target='_blank'>
+            <button class="play-song-btn"><span>▶</span></button>
+          </a>
+        </div>
+      </div>
+      `
+    }
+
+    const callAPI = async (url, method = 'POST', body = null) => {
+      try {
+        const response = await fetch(url, {
+          method,
+          body: body ? JSON.stringify(body) : null
+        })
+        const result = await response.json()
+        return result
+      } catch (error) {
+        console.log(error);
+        return null
+      }
+    }
+
+    (async function () {
+      listSongElement.innerHTML = ''
+      const listSong = await callAPI('http://vps-23213a4f.vps.ovh.ca:3333/song/list')
+      if (!listSong) return
+      for (var i = 0; i < listSong.length; i += itemsPerPage) {
+        songPages.push(listSong.slice(i, i + itemsPerPage));
+      }
+      songPages[0].forEach(songInfo => {
+        listSongElement.innerHTML += renderSong(songInfo)
+      })
+    })()
+
+    window.onscroll = () => {
+      if ((window.innerHeight * 2 + window.scrollY) >= document.body.offsetHeight
+        && songPages[page + 1]) {
+        page++
+        const songs = songPages[page]
+        songs.forEach(songInfo => {
+          listSongElement.innerHTML += renderSong(songInfo)
+        })
+      }
+    }
+  </script>
+</body>
+
+</html>
