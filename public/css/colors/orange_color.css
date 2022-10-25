@@ -1,0 +1,166 @@
+.my-wave {
+    fill: #f5865d;
+}
+
+.main-title h2,
+.navbar .navbar-nav > li > a.active,
+.home .intro h3 span:before,
+.about-me .about-info .personal-info p,
+.skills .progress-container .percent,
+.services .service .service-icon,
+.resume .timeline ul li .timeline-content h4,
+.portfolio .list-filter .active,
+.portfolio .portfolio-content .item .overlay .icon-img,
+.portfolio .portfolio-content .item .overlay .item-title h4,
+.facts .fact-item h4,
+.testimonials .client-details span,
+.blog .post-img .post-category a,
+.blog .post .post-content .post-title h4:hover,
+.blog .post .post-content .post-info li a span:hover,
+.light .blog .post .post-content .post-more,
+.blog .post .post-content .post-more:hover,
+.contact .contact-box .title-box .icon-box,
+.footer .footer-social-icons li a:hover,
+.footer .copyright p a {
+    color: #f5865d;
+}
+
+.main-title h2:after,
+.loading .sk-folding-cube .sk-cube:before,
+.navbar .navbar-brand .brand-after,
+.light .navbar .menu-toggle,
+.about-me .about-info h3:before,
+.about-me .about-info .personal-info p:before,
+.services .service h4:after,
+.resume .timeline ul li:before,
+.resume .timeline ul li .timeline-content span,
+.testimonials .owl-theme .owl-dots .owl-dot.active span,
+.testimonials .owl-theme .owl-dots .owl-dot:hover span,
+.footer .logo span,
+.scroll-top {
+    background: #f5865d;
+}
+
+.main-btn {
+    background: #f5865d;
+    border: 2px solid #f5865d;
+}
+
+.main-btn:hover {
+    border: 2px solid #f5865d;
+    color: #f5865d;
+}
+
+.navbar .menu-toggle {
+    background: linear-gradient(120deg, #f5865d 20%, #666 100%);
+    border: 1px solid #f5865d;
+}
+
+.navbar .navbar-nav > li > a:before {
+    background: #f5865d !important;
+}
+
+.about-me .about-image:before {
+    background: linear-gradient(to left, rgb(245,  134,  93) 6%, #fff 100%);
+}
+
+.rtl-demo .about-me .about-image:before {
+    background: linear-gradient(to right, rgb(245,  134,  93) 6%, #fff 100%);
+}
+
+.about-me .about-image:after {
+    border-left: 3px solid rgba(245, 134, 93, .75);
+    border-top: 3px solid rgba(245, 134, 93, .75);
+}
+
+.rtl-demo .about-me .about-image:after {
+    border-left: none;
+    border-right: 3px solid rgba(245, 134, 93, .75);
+    border-top: 3px solid rgba(245, 134, 93, .75);
+}
+
+.skills .progress-container .progress .progress-bar {
+    background-color: #f5865d;
+}
+
+.services .service h4:before {
+    border-top: 1px dotted rgba(245, 134, 93, .7);
+}
+
+.resume .timeline ul li:nth-child(odd) .timeline-content:before {
+    border-color: transparent transparent transparent #f5865d;
+}
+
+@media (min-width: 768px) {
+
+    .rtl-demo .resume .timeline ul li:nth-child(odd) .timeline-content:before {
+        border-color: transparent #f5865d transparent transparent;
+    }
+	
+	.rtl-demo .resume .timeline ul li:nth-child(even) .timeline-content:before {
+        border-color: transparent transparent transparent #f5865d;
+    }
+}
+
+.resume .timeline ul li:nth-child(even) .timeline-content:before {
+    border-color: transparent #f5865d transparent transparent;
+}
+
+.portfolio .list-filter li:before {
+    background-color: #f5865d;
+}
+
+.light .portfolio .portfolio-content .item .overlay {
+    background: rgba(245, 134, 93, .9);
+}
+
+.testimonials .owl-theme .owl-dots .owl-dot.active span {
+    -webkit-box-shadow: 0 0 0 0 rgba(245, 134, 93, .6);
+            box-shadow: 0 0 0 0 rgba(245, 134, 93, .6);
+}
+
+@-webkit-keyframes pulse
+{
+    to
+    {
+        -webkit-box-shadow: 0 0 0 7px rgba(245, 134, 93, 0);
+                box-shadow: 0 0 0 7px rgba(245, 134, 93, 0);
+    }
+}
+
+@keyframes pulse
+{
+    to
+    {
+        -webkit-box-shadow: 0 0 0 7px rgba(245, 134, 93, 0);
+                box-shadow: 0 0 0 7px rgba(245, 134, 93, 0);
+    }
+}
+
+.contact .contact-form .form-group .form-control:focus {
+    border: 1px solid #f5865d;
+}
+
+@media (max-width: 767.98px) {
+    
+    .navbar .navbar-links .navbar-nav > li.nav-brand a .brand-after {
+        background: #f5865d;
+    }
+    
+    .navbar .navbar-nav > li:not(.nav-brand) > a:hover,
+	.light .navbar .navbar-nav > li:not(.nav-brand) > a:hover {
+        color: #f5865d;
+    }
+    
+    .navbar .navbar-nav > li > a.active,
+	.light .navbar .navbar-nav > li > a.active,
+	.light .navbar.active-nav .navbar-nav > li > a.active {
+        color: #f5865d;
+    }
+    
+    .resume .timeline ul li:nth-child(even) .timeline-content:before,
+    .resume .timeline ul li:nth-child(odd) .timeline-content:before {
+        border-color: transparent transparent #f5865d transparent;
+    }
+       
+}
