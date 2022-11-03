@@ -102,10 +102,34 @@
     .donate-btn {
       margin-top: 20px;
     }
+
+    nav {
+      background: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    nav a {
+      text-decoration: none;
+    }
+
+    nav h1 {
+      color: white;
+      padding-left: 40px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 2px black, 0 0 1em rgb(0, 255, 204), 0 0 0.2em rgb(0, 0, 0);
+    }
   </style>
 </head>
 
 <body>
+  <nav>
+    <a href="/">
+      <h1>Home</h1>
+    </a>
+  </nav>
   <main id='main' class="scroll-container">
 
     <section class="section1 flex-box">
