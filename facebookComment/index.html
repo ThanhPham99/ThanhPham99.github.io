@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <div id="fb-root"></div>
+  <script async defer crossorigin="anonymous"
+    src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v15.0&appId=187044553113839&autoLogAppEvents=1"
+    nonce="NzMY4w6b"></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="comments">
+  </div>
+  <script>
+    function getParamsFromUrl(query) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(query)
+    }
+    const comments = document.getElementById('comments')
+    console.log(`<div class="fb-comments" data-href="${getParamsFromUrl('ref')}" data-width="100%" target="_top" data-numposts="${getParamsFromUrl('numposts') ? getParamsFromUrl('numposts') : 5}"></div>`);
+    comments.innerHTML = `<div class="fb-comments" data-href="${getParamsFromUrl('ref')}" data-width="100%" target="_top" data-numposts="${getParamsFromUrl('numposts') ? getParamsFromUrl('numposts') : 5}"></div>`;
+  </script>
+</body>
+
+</html>
