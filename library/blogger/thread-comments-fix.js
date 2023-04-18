@@ -126,6 +126,12 @@ $(function () {
   //Toggle comment orders
   $(".commentSort").click(function () {
     $(".comment-control").toggleClass("top"), $(".top-comment-wrap > .loadmore").slideToggle();
+    const e = document.querySelector('#top-ra').style.flexDirection
+    if (!e || e === 'column-reverse') {
+      document.querySelector('#top-ra').style.flexDirection = 'column'
+    } else {
+      document.querySelector('#top-ra').style.flexDirection = 'column-reverse'
+    }
     // var e = $(".toplevel-thread .top-comment-wrap>ol>li.comment").length; 
     // if (p = $(".toplevel-thread .top-comment-wrap>ol>li.comment.hidden").length, 
     // $(".toplevel-thread .top-comment-wrap>ol>li.comment").addClass("hidden"), 
