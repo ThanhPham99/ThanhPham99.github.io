@@ -384,6 +384,9 @@
                 class="px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm shadow-inner transition-colors duration-500">
                 <!-- Phase content -->
               </span>
+              <div id="game-player-count" class="flex items-center gap-2 text-sm font-medium text-slate-300">
+                <!-- Player count injected here -->
+              </div>
             </div>
             <div id="game-controls" class="flex gap-3 items-center">
               <!-- Controls injected by JS -->
@@ -527,6 +530,23 @@
     ];
     const STORAGE_KEY = 'werewolf_manager_games_v2';
     const SETUP_STORAGE_KEY = 'werewolf_manager_setup_v1';
+    const NIGHT_ACTION_ORDER = [
+      'thief',
+      'cupid',
+      'two_sisters',
+      'three_brothers',
+      'hybrid_wolf',
+      'bodyguard',
+      'fox',
+      'seer',
+      'werewolf', // Represents wolf pack
+      'wolf_cub', // Represents wolf pack
+      'white_wolf',
+      'witch',
+      'pied_piper',
+      'hunter'
+    ];
+
 
     // --- Global State ---
     let activeGameId = null;
@@ -764,6 +784,36 @@
       navigateTo('active');
     }
 
+    function isRoleActiveThisNight(player, gameData) {
+      if (gameData.currentPhase !== 'night' || !player.isAlive) {
+        return false;
+      }
+
+      const roleId = player.role.id;
+      const day = gameData.dayCount;
+
+      // Roles that only act on night 1
+      const night1Roles = ['thief', 'cupid', 'two_sisters', 'three_brothers', 'hybrid_wolf'];
+      if (night1Roles.includes(roleId) && day > 1) {
+        return false;
+      }
+
+      // White wolf's special bite is only on even nights, but they can still bite with the pack on any night.
+      // So, we don't return false here. The action availability is handled later.
+
+      // Witch check for used abilities
+      if (roleId === 'witch') {
+        const usedAbilities = player.usedAbilities || [];
+        if (usedAbilities.includes('save') && usedAbilities.includes('poison')) {
+          return false; // No potions left
+        }
+      }
+
+      // General check for any actions
+      const roleDef = ROLES.find(r => r.id === roleId);
+      return roleDef && roleDef.actions && roleDef.actions.length > 0;
+    }
+
     function renderGameUI() {
       if (!currentGameData) return;
       const isNight = currentGameData.currentPhase === 'night';
@@ -776,6 +826,13 @@
           : `NGÀY ${currentGameData.dayCount}`;
       badge.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4"></i> ${text}`;
       badge.className = `px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm shadow-inner transition-colors ${isNight ? 'bg-indigo-950 text-indigo-200' : 'bg-amber-500 text-white'}`;
+
+      // Player Count
+      const playerCountContainer = document.getElementById('game-player-count');
+      const alivePlayers = currentGameData.players.filter(p => p.isAlive).length;
+      const totalPlayers = currentGameData.players.length;
+      playerCountContainer.innerHTML = `<i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+                <span>${alivePlayers} / ${totalPlayers}</span>`;
 
       // Controls
       const controls = document.getElementById('game-controls');
@@ -795,7 +852,23 @@
       // The preceding night is "night_" + currentDayCount if currentPhase is day
       const checkDeathPhase = currentGameData.currentPhase === 'day' ? `night_${currentGameData.dayCount}` : null;
 
-      currentGameData.players.forEach(p => {
+      // Sắp xếp người chơi theo thứ tự thực hiện chức năng, không tính sống/chết
+      const sortedPlayers = [...currentGameData.players].sort((a, b) => {
+        const roleIndexA = NIGHT_ACTION_ORDER.indexOf(a.role.id);
+        const roleIndexB = NIGHT_ACTION_ORDER.indexOf(b.role.id);
+
+        // Đưa những vai không có trong thứ tự hành động xuống cuối
+        if (roleIndexA === -1 && roleIndexB !== -1) return 1;
+        if (roleIndexA !== -1 && roleIndexB === -1) return -1;
+
+        // Sắp xếp theo thứ tự trong NIGHT_ACTION_ORDER
+        if (roleIndexA !== -1 && roleIndexB !== -1) return roleIndexA - roleIndexB;
+
+        // Giữ nguyên thứ tự ban đầu nếu cả hai đều không có trong danh sách
+        return 0;
+      });
+
+      sortedPlayers.forEach(p => {
         const roleDef = ROLES.find(r => r.id === p.role.id) || ROLES[1];
         const originalRoleDef = p.originalRole ? ROLES.find(r => r.id === p.originalRole.id) : null;
         const card = document.createElement('div');
