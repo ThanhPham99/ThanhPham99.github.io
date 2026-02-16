@@ -406,6 +406,55 @@ function setupEventListeners() {
     switchView('dashboard');
   });
 
+  // Export Data
+  document.getElementById('btn-export').addEventListener('click', () => {
+    if (products.length === 0) {
+      alert('Không có dữ liệu để xuất.');
+      return;
+    }
+    const data = JSON.stringify(products, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `goods-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // Import Data
+  const import_input = document.getElementById('import-input');
+  document.getElementById('btn-import-trigger').addEventListener('click', () => import_input.click());
+
+  import_input.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported_data = JSON.parse(event.target.result);
+        if (Array.isArray(imported_data)) {
+          if (confirm(`Bạn có chắc muốn nhập ${imported_data.length} sản phẩm? Dữ liệu hiện tại sẽ bị thay thế.`)) {
+            products = imported_data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            renderProducts();
+            alert('Nhập dữ liệu thành công!');
+          }
+        } else {
+          alert('Định dạng file không hợp lệ.');
+        }
+      } catch (err) {
+        alert('Lỗi khi đọc file JSON.');
+        console.error(err);
+      }
+      import_input.value = ''; // Reset input
+    };
+    reader.readAsText(file);
+  });
+
   // Confirm Delete Modal
   document.getElementById('btn-modal-cancel').addEventListener('click', () => {
     modal.classList.add('hidden');
