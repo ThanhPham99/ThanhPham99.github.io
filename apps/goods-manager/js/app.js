@@ -6,6 +6,8 @@
 const STORAGE_KEY = 'goods_manager_data_vanilla';
 let products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let current_view = 'dashboard';
+let sort_field = 'created_at';
+let sort_order = 'desc';
 let editing_product_id = null;
 let delete_target_id = null;
 let stream = null;
@@ -258,6 +260,24 @@ function renderProducts() {
     removeDiacritics(p.name).includes(query)
   );
 
+  // Sorting logic
+  filtered.sort((a, b) => {
+    let val_a = a[sort_field];
+    let val_b = b[sort_field];
+
+    // Handle string comparison for names
+    if (sort_field === 'name') {
+      val_a = removeDiacritics(val_a || '');
+      val_b = removeDiacritics(val_b || '');
+      return sort_order === 'asc' ? val_a.localeCompare(val_b) : val_b.localeCompare(val_a);
+    }
+
+    // Default numeric/date comparison
+    val_a = parseFloat(val_a) || 0;
+    val_b = parseFloat(val_b) || 0;
+    return sort_order === 'asc' ? val_a - val_b : val_b - val_a;
+  });
+
   if (filtered.length === 0) {
     product_grid.innerHTML = `
             <div class="col-span-full py-20 text-center animate-fade-in-up">
@@ -334,6 +354,36 @@ function setupForm(id) {
 function setupEventListeners() {
   document.getElementById('btn-add-product').addEventListener('click', () => switchView('form'));
   search_input.addEventListener('input', renderProducts);
+
+  // Sort Chips Logic
+  document.querySelectorAll('.sort-chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      const field = chip.getAttribute('data-sort-field');
+      sort_field = field;
+
+      // UI Update
+      document.querySelectorAll('.sort-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      renderProducts();
+    });
+  });
+
+  // Toggle Order Logic
+  document.getElementById('btn-toggle-order').addEventListener('click', () => {
+    sort_order = sort_order === 'asc' ? 'desc' : 'asc';
+
+    // Icon Update
+    const icon = document.getElementById('sort-order-icon');
+    if (sort_order === 'asc') {
+      icon.setAttribute('data-lucide', 'arrow-up-narrow-wide');
+    } else {
+      icon.setAttribute('data-lucide', 'arrow-down-narrow-wide');
+    }
+
+    initIcons();
+    renderProducts();
+  });
 
   document.getElementById('btn-back').addEventListener('click', () => switchView('dashboard'));
   document.getElementById('btn-cancel').addEventListener('click', () => switchView('dashboard'));

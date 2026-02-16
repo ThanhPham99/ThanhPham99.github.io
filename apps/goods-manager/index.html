@@ -62,6 +62,8 @@
             .btn-danger { @apply flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white font-semibold rounded-xl transition-all active:scale-95; }
             .input-field { @apply w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all placeholder:text-slate-400; }
             .card-premium { @apply bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/60 overflow-hidden transition-all hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1; }
+            .sort-chip { @apply flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-slate-500 transition-all hover:text-slate-700 active:scale-95; }
+            .sort-chip.active { @apply bg-white text-brand-600 shadow-sm ring-1 ring-slate-200; }
         }
     </style>
 </head>
@@ -94,15 +96,39 @@
           </div>
         </header>
 
-        <!-- Search Section -->
-        <div class="relative max-w-2xl mb-12 group">
-          <div
-            class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
-            <i data-lucide="search" class="w-6 h-6"></i>
+        <!-- Search & Filter Section -->
+        <div class="flex flex-col xl:flex-row gap-4 mb-12">
+          <!-- Search -->
+          <div class="relative flex-grow group">
+            <div
+              class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+              <i data-lucide="search" class="w-6 h-6"></i>
+            </div>
+            <input type="text" id="search-input"
+              class="w-full pl-14 pr-6 py-5 bg-white border border-slate-200 rounded-[1.5rem] shadow-xl shadow-slate-200/40 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-lg font-medium"
+              placeholder="Tìm tên sản phẩm...">
           </div>
-          <input type="text" id="search-input"
-            class="w-full pl-14 pr-6 py-5 bg-white border border-slate-200 rounded-[1.5rem] shadow-xl shadow-slate-200/40 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-lg"
-            placeholder="Tìm kiếm theo tên sản phẩm...">
+
+          <!-- Modern Sort UI -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center p-1.5 bg-slate-100/50 rounded-[1.5rem] border border-slate-200 shadow-inner">
+              <button type="button" data-sort-field="created_at" class="sort-chip active">
+                <i data-lucide="clock" class="w-4 h-4"></i> Mới
+              </button>
+              <button type="button" data-sort-field="name" class="sort-chip">
+                <i data-lucide="type" class="w-4 h-4"></i> Tên
+              </button>
+              <button type="button" data-sort-field="price" class="sort-chip">
+                <i data-lucide="banknote" class="w-4 h-4"></i> Giá
+              </button>
+            </div>
+
+            <button type="button" id="btn-toggle-order"
+              class="btn-secondary w-16 h-16 !p-0 !rounded-[1.5rem] shadow-xl shadow-slate-200/40 flex-shrink-0"
+              title="Đảo ngược thứ tự">
+              <i data-lucide="arrow-down-narrow-wide" id="sort-order-icon" class="w-6 h-6 text-brand-600"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Product Grid -->
