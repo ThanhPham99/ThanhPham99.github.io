@@ -120,17 +120,65 @@
             <div class="space-y-4">
               <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Hình ảnh hàng hóa</label>
 
-              <!-- Camera Box -->
-              <div id="camera-section"
-                class="hidden relative rounded-[2rem] overflow-hidden bg-black aspect-[4/3] shadow-2xl">
+              <!-- Full-screen Camera Section -->
+              <div id="camera-section" class="hidden fixed inset-0 z-[150] bg-black animate-scale-in">
                 <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div class="absolute bottom-6 inset-x-0 flex justify-center gap-4 px-6">
-                  <button type="button" id="btn-capture" class="btn-primary w-full max-w-[200px]">
-                    <i data-lucide="camera" class="w-5 h-5"></i> Chụp ngay
-                  </button>
-                  <button type="button" id="btn-stop-camera" class="btn-secondary w-full max-w-[120px]">
-                    Đóng
-                  </button>
+                <div id="camera-flash"
+                  class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150"></div>
+
+                <!-- Camera Grid -->
+                <div class="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-20">
+                  <div class="border-r border-b border-white"></div>
+                  <div class="border-r border-b border-white"></div>
+                  <div class="border-b border-white"></div>
+                  <div class="border-r border-b border-white"></div>
+                  <div class="border-r border-b border-white"></div>
+                  <div class="border-b border-white"></div>
+                  <div class="border-r border-white"></div>
+                  <div class="border-r border-white"></div>
+                  <div></div>
+                </div>
+
+                <!-- Close Button (Top Right) -->
+                <button type="button" id="btn-stop-camera"
+                  class="absolute top-6 right-6 p-4 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                  <i data-lucide="x" class="w-8 h-8"></i>
+                </button>
+
+                <!-- Bottom Controls -->
+                <div class="absolute bottom-12 inset-x-0 px-6">
+                  <div class="grid grid-cols-3 items-center w-full max-w-lg mx-auto">
+                    <!-- Left: Utilities -->
+                    <div class="flex items-center gap-4">
+                      <button type="button" id="btn-toggle-torch"
+                        class="hidden p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
+                      </button>
+
+                      <button type="button" id="btn-switch-camera"
+                        class="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                        <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+                      </button>
+                    </div>
+
+                    <!-- Center: Capture -->
+                    <div class="flex justify-center">
+                      <button type="button" id="btn-capture"
+                        class="group relative w-20 h-20 rounded-full bg-white p-1.5 transition-transform active:scale-90 shadow-2xl">
+                        <div
+                          class="w-full h-full rounded-full border-[3px] border-black/10 flex items-center justify-center">
+                          <div
+                            class="w-14 h-14 bg-white rounded-full group-hover:scale-95 transition-transform shadow-inner border border-slate-200">
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- Right: Empty for balance -->
+                    <div class="flex justify-end pr-4">
+                      <!-- Can add gallery preview here later -->
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -198,13 +246,13 @@
     </main>
 
     <!-- IMAGE PREVIEW MODAL -->
-    <div id="image-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
-      <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-md cursor-pointer" id="image-modal-close"></div>
+    <div id="image-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center">
+      <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-md cursor-pointer" id="image-modal-bg"></div>
       <div
         class="relative w-full h-full flex items-center justify-center p-4 md:p-12 animate-scale-in pointer-events-none">
-        <button class="absolute top-6 right-6 text-white/30 hover:text-white transition-colors p-2 pointer-events-auto"
-          onclick="closeImageModal()">
-          <i data-lucide="x" class="w-12 h-12"></i>
+        <button id="btn-close-image-modal"
+          class="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 pointer-events-auto active:scale-95 z-10">
+          <i data-lucide="x" class="w-10 h-10"></i>
         </button>
         <img id="modal-full-image" src="" alt="Full Preview"
           class="w-full h-full object-contain drop-shadow-2xl pointer-events-auto">

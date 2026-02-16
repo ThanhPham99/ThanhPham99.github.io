@@ -9,6 +9,8 @@ let current_view = 'dashboard';
 let editing_product_id = null;
 let delete_target_id = null;
 let stream = null;
+let current_camera_mode = 'environment'; // environment (back) or user (front)
+let is_torch_on = false;
 
 // --- DOM Elements ---
 const views = {
@@ -73,15 +75,37 @@ function switchView(view_name, editing_id = null) {
 }
 
 // --- Camera Logic ---
-async function startCamera() {
+async function startCamera(mode = current_camera_mode) {
+  stopCamera(); // Stop existing stream if any
+  current_camera_mode = mode;
+
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' },
+      video: {
+        facingMode: mode,
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
       audio: false
     });
     video.srcObject = stream;
     camera_section.classList.remove('hidden');
+    camera_section.classList.add('animate-scale-in');
     image_preview_container.classList.add('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+    // Check for torch support
+    const track = stream.getVideoTracks()[0];
+    const capabilities = track.getCapabilities();
+    const torch_btn = document.getElementById('btn-toggle-torch');
+
+    if (capabilities.torch) {
+      torch_btn.classList.remove('hidden');
+      is_torch_on = false;
+      torch_btn.classList.remove('text-yellow-400');
+    } else {
+      torch_btn.classList.add('hidden');
+    }
   } catch (err) {
     console.error("Camera access error detail:", err);
     let error_msg = "Không thể khởi động camera. ";
@@ -98,23 +122,68 @@ async function startCamera() {
   }
 }
 
+async function switchCamera() {
+  is_torch_on = false;
+  if (navigator.vibrate) navigator.vibrate(20);
+  const new_mode = current_camera_mode === 'environment' ? 'user' : 'environment';
+  await startCamera(new_mode);
+}
+
+async function toggleTorch() {
+  if (!stream) return;
+  const track = stream.getVideoTracks()[0];
+  try {
+    is_torch_on = !is_torch_on;
+    await track.applyConstraints({
+      advanced: [{ torch: is_torch_on }]
+    });
+    const torch_btn = document.getElementById('btn-toggle-torch');
+    if (is_torch_on) {
+      torch_btn.classList.add('text-yellow-400');
+    } else {
+      torch_btn.classList.remove('text-yellow-400');
+    }
+  } catch (err) {
+    console.error("Torch error:", err);
+  }
+}
+
 function stopCamera() {
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
     stream = null;
   }
+  is_torch_on = false;
   camera_section.classList.add('hidden');
   image_preview_container.classList.remove('hidden');
+  document.body.style.overflow = ''; // Restore scrolling
 }
 
 async function capturePhoto() {
+  // Shutter Flash Effect
+  const flash = document.getElementById('camera-flash');
+  flash.style.opacity = '1';
+  setTimeout(() => { flash.style.opacity = '0'; }, 150);
+
+  // Haptic feedback
+  if (navigator.vibrate) navigator.vibrate(50);
+
   const context = capture_canvas.getContext('2d');
+
+  // High quality capture
   capture_canvas.width = video.videoWidth;
   capture_canvas.height = video.videoHeight;
+
+  // Flip if front camera
+  if (current_camera_mode === 'user') {
+    context.translate(capture_canvas.width, 0);
+    context.scale(-1, 1);
+  }
+
   context.drawImage(video, 0, 0, capture_canvas.width, capture_canvas.height);
 
-  const data_url = capture_canvas.toDataURL('image/jpeg');
-  const resized = await resizeImage(data_url, 320);
+  const data_url = capture_canvas.toDataURL('image/jpeg', 0.9);
+  const resized = await resizeImage(data_url, 320); // Increased quality for mobile preview
 
   updatePreview(resized);
   stopCamera();
@@ -146,8 +215,13 @@ async function resizeImage(base64Str, maxWidth = 320) {
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
+
+      // Better quality drawing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
       ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.8));
+      resolve(canvas.toDataURL('image/jpeg', 0.7)); // Balanced quality and size
     };
   });
 }
@@ -261,10 +335,22 @@ function setupEventListeners() {
   document.getElementById('btn-back').addEventListener('click', () => switchView('dashboard'));
   document.getElementById('btn-cancel').addEventListener('click', () => switchView('dashboard'));
 
-  document.getElementById('btn-start-camera').addEventListener('click', startCamera);
+  document.getElementById('btn-start-camera').addEventListener('click', () => startCamera('environment'));
+  document.getElementById('btn-switch-camera').addEventListener('click', switchCamera);
+  document.getElementById('btn-toggle-torch').addEventListener('click', toggleTorch);
   document.getElementById('btn-stop-camera').addEventListener('click', stopCamera);
   document.getElementById('btn-capture').addEventListener('click', capturePhoto);
   document.getElementById('btn-file-trigger').addEventListener('click', () => image_input.click());
+
+  // Double tap to switch camera
+  let last_tap = 0;
+  video.addEventListener('touchstart', (e) => {
+    const now = Date.now();
+    if (now - last_tap < 300) {
+      switchCamera();
+    }
+    last_tap = now;
+  });
 
   image_preview_container.addEventListener('click', () => {
     if (image_preview_img.classList.contains('hidden')) {
@@ -327,7 +413,8 @@ function setupEventListeners() {
   });
 
   // Image Preview Modal
-  document.getElementById('image-modal-close').addEventListener('click', window.closeImageModal);
+  document.getElementById('image-modal-bg').addEventListener('click', window.closeImageModal);
+  document.getElementById('btn-close-image-modal').addEventListener('click', window.closeImageModal);
 
   // Close on Escape key
   document.addEventListener('keydown', (e) => {
