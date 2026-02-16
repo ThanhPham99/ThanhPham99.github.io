@@ -131,27 +131,19 @@
             <div class="space-y-4">
               <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Hình ảnh hàng hóa</label>
 
-              <!-- Square Viewfinder Camera Section -->
-              <div id="camera-section" class="hidden fixed inset-0 z-[150] bg-slate-950 animate-scale-in flex flex-col">
-                <!-- Camera Header -->
-                <div class="p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
-                  <h2 class="text-white font-bold text-xl">Chụp ảnh sản phẩm</h2>
-                  <button type="button" id="btn-stop-camera"
-                    class="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                    <i data-lucide="x" class="w-8 h-8"></i>
-                  </button>
-                </div>
+              <!-- Image Box Area (Fixed Square) -->
+              <div class="relative max-w-[320px] mx-auto">
+                <div id="image-box-wrapper"
+                  class="relative aspect-square rounded-[2.5rem] overflow-hidden border-4 border-slate-200 bg-slate-50 shadow-inner group">
 
-                <!-- Viewfinder Area -->
-                <div class="flex-grow flex items-center justify-center p-4">
-                  <div
-                    class="relative w-full aspect-square max-w-[min(90vw,60vh)] rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-2xl">
+                  <!-- 1. LIVE CAMERA VIEW -->
+                  <div id="camera-section" class="hidden absolute inset-0 z-10 bg-black flex flex-col">
                     <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
                     <div id="camera-flash"
                       class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150">
                     </div>
 
-                    <!-- Camera Grid (Inside Viewfinder) -->
+                    <!-- Overlay Grid -->
                     <div class="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-30">
                       <div class="border-r border-b border-white/50"></div>
                       <div class="border-r border-b border-white/50"></div>
@@ -163,47 +155,45 @@
                       <div class="border-r border-white/50"></div>
                       <div></div>
                     </div>
-                  </div>
-                </div>
 
-                <!-- Bottom Controls -->
-                <div class="p-12 bg-gradient-to-t from-black/50 to-transparent">
-                  <div class="flex items-center justify-center gap-10 max-w-lg mx-auto">
-                    <button type="button" id="btn-switch-camera"
-                      class="p-5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                      <i data-lucide="refresh-cw" class="w-8 h-8"></i>
-                    </button>
+                    <!-- Compact Camera Controls -->
+                    <div class="absolute bottom-6 left-0 right-0 px-6 flex items-center justify-between">
+                      <button type="button" id="btn-switch-camera"
+                        class="p-4 bg-white/20 backdrop-blur-md rounded-full text-white active:scale-90 transition-transform">
+                        <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+                      </button>
 
-                    <button type="button" id="btn-capture"
-                      class="group relative w-24 h-24 rounded-full bg-white p-1.5 transition-transform active:scale-90 shadow-2xl">
-                      <div
-                        class="w-full h-full rounded-full border-[4px] border-black/10 flex items-center justify-center">
-                        <div
-                          class="w-16 h-16 bg-white rounded-full group-hover:scale-95 transition-transform shadow-inner border border-slate-200">
-                        </div>
-                      </div>
-                    </button>
+                      <button type="button" id="btn-capture"
+                        class="w-16 h-16 rounded-full bg-white p-1 shadow-2xl active:scale-95 transition-transform flex items-center justify-center">
+                        <div class="w-12 h-12 rounded-full border-2 border-slate-200"></div>
+                      </button>
 
+                      <button type="button" id="btn-stop-camera"
+                        class="p-4 bg-white/20 backdrop-blur-md rounded-full text-white active:scale-90 transition-transform">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                      </button>
+                    </div>
+
+                    <!-- Torch Button (Floating) -->
                     <button type="button" id="btn-toggle-torch"
-                      class="hidden p-5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                      <i data-lucide="zap" class="w-8 h-8"></i>
+                      class="hidden absolute top-6 right-6 p-4 bg-white/20 backdrop-blur-md rounded-full text-white active:scale-90 transition-transform">
+                      <i data-lucide="zap" class="w-6 h-6"></i>
                     </button>
                   </div>
-                </div>
-              </div>
 
-              <!-- Preview Area -->
-              <div id="image-preview-container"
-                class="group relative aspect-square max-w-[320px] mx-auto rounded-[2rem] border-4 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-200 transition-all cursor-pointer flex flex-col items-center justify-center p-2">
-                <div id="preview-placeholder" class="text-center space-y-3">
-                  <div
-                    class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform">
-                    <i data-lucide="camera" class="w-10 h-10 text-slate-400 group-hover:text-brand-500"></i>
+                  <!-- 2. PREVIEW / PLACEHOLDER VIEW -->
+                  <div id="image-preview-container"
+                    class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-brand-50/50">
+                    <div id="preview-placeholder" class="text-center space-y-3">
+                      <div
+                        class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform">
+                        <i data-lucide="camera" class="w-10 h-10 text-slate-400 group-hover:text-brand-500"></i>
+                      </div>
+                      <p class="text-slate-500 font-bold group-hover:text-brand-600">Nhấp để thêm ảnh</p>
+                    </div>
+                    <img id="image-preview-img" src="" alt="Preview" class="hidden w-full h-full object-contain">
                   </div>
-                  <p class="text-slate-500 font-bold group-hover:text-brand-600">Nhấp để thêm ảnh</p>
                 </div>
-                <img id="image-preview-img" src="" alt="Preview"
-                  class="hidden w-full h-full object-contain rounded-[1.8rem]">
               </div>
 
               <!-- Buttons -->

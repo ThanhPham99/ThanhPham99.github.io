@@ -90,9 +90,7 @@ async function startCamera(mode = current_camera_mode) {
     });
     video.srcObject = stream;
     camera_section.classList.remove('hidden');
-    camera_section.classList.add('animate-scale-in');
     image_preview_container.classList.add('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
 
     // Check for torch support
     const track = stream.getVideoTracks()[0];
@@ -156,7 +154,6 @@ function stopCamera() {
   is_torch_on = false;
   camera_section.classList.add('hidden');
   image_preview_container.classList.remove('hidden');
-  document.body.style.overflow = ''; // Restore scrolling
 }
 
 async function capturePhoto() {
