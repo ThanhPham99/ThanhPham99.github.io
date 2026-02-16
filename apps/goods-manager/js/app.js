@@ -276,7 +276,7 @@ function renderProducts() {
     product_grid.className = "flex flex-col gap-6";
     product_grid.innerHTML = filtered.map(product => `
             <article class="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/60 overflow-hidden flex flex-col sm:flex-row group hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-x-1 sm:hover:-translate-x-2 transition-all duration-300">
-                <div class="w-full sm:w-48 md:w-64 aspect-[4/3] sm:aspect-square bg-slate-50 flex-shrink-0 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 p-4 cursor-pointer relative" onclick="openImageModal('${product.image_base64}')">
+                <div class="w-full max-w-[320px] mx-auto sm:max-w-none sm:w-48 md:w-64 aspect-square bg-slate-50 flex-shrink-0 flex items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 p-2 cursor-pointer relative" onclick="openImageModal('${product.image_base64}')">
                     <img src="${product.image_base64}" alt="${product.name}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500">
                     <div class="absolute inset-0 bg-brand-600/0 group-hover:bg-brand-600/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <i data-lucide="zoom-in" class="w-8 h-8 text-white"></i>
