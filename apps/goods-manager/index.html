@@ -131,64 +131,63 @@
             <div class="space-y-4">
               <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Hình ảnh hàng hóa</label>
 
-              <!-- Full-screen Camera Section -->
-              <div id="camera-section" class="hidden fixed inset-0 z-[150] bg-black animate-scale-in">
-                <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div id="camera-flash"
-                  class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150"></div>
-
-                <!-- Camera Grid -->
-                <div class="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-20">
-                  <div class="border-r border-b border-white"></div>
-                  <div class="border-r border-b border-white"></div>
-                  <div class="border-b border-white"></div>
-                  <div class="border-r border-b border-white"></div>
-                  <div class="border-r border-b border-white"></div>
-                  <div class="border-b border-white"></div>
-                  <div class="border-r border-white"></div>
-                  <div class="border-r border-white"></div>
-                  <div></div>
+              <!-- Square Viewfinder Camera Section -->
+              <div id="camera-section" class="hidden fixed inset-0 z-[150] bg-slate-950 animate-scale-in flex flex-col">
+                <!-- Camera Header -->
+                <div class="p-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+                  <h2 class="text-white font-bold text-xl">Chụp ảnh sản phẩm</h2>
+                  <button type="button" id="btn-stop-camera"
+                    class="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                    <i data-lucide="x" class="w-8 h-8"></i>
+                  </button>
                 </div>
 
-                <!-- Close Button (Top Right) -->
-                <button type="button" id="btn-stop-camera"
-                  class="absolute top-6 right-6 p-4 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                  <i data-lucide="x" class="w-8 h-8"></i>
-                </button>
+                <!-- Viewfinder Area -->
+                <div class="flex-grow flex items-center justify-center p-4">
+                  <div
+                    class="relative w-full aspect-square max-w-[min(90vw,60vh)] rounded-[2.5rem] overflow-hidden border-4 border-white/20 shadow-2xl">
+                    <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                    <div id="camera-flash"
+                      class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150">
+                    </div>
+
+                    <!-- Camera Grid (Inside Viewfinder) -->
+                    <div class="absolute inset-0 pointer-events-none grid grid-cols-3 grid-rows-3 opacity-30">
+                      <div class="border-r border-b border-white/50"></div>
+                      <div class="border-r border-b border-white/50"></div>
+                      <div class="border-b border-white/50"></div>
+                      <div class="border-r border-b border-white/50"></div>
+                      <div class="border-r border-b border-white/50"></div>
+                      <div class="border-b border-white/50"></div>
+                      <div class="border-r border-white/50"></div>
+                      <div class="border-r border-white/50"></div>
+                      <div></div>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- Bottom Controls -->
-                <div class="absolute bottom-12 inset-x-0 px-6">
-                  <div class="grid grid-cols-3 items-center w-full max-w-lg mx-auto">
-                    <!-- Left: Utilities -->
-                    <div class="flex items-center gap-4">
-                      <button type="button" id="btn-toggle-torch"
-                        class="hidden p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                        <i data-lucide="zap" class="w-6 h-6"></i>
-                      </button>
+                <div class="p-12 bg-gradient-to-t from-black/50 to-transparent">
+                  <div class="flex items-center justify-center gap-10 max-w-lg mx-auto">
+                    <button type="button" id="btn-switch-camera"
+                      class="p-5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                      <i data-lucide="refresh-cw" class="w-8 h-8"></i>
+                    </button>
 
-                      <button type="button" id="btn-switch-camera"
-                        class="p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
-                        <i data-lucide="refresh-cw" class="w-6 h-6"></i>
-                      </button>
-                    </div>
-
-                    <!-- Center: Capture -->
-                    <div class="flex justify-center">
-                      <button type="button" id="btn-capture"
-                        class="group relative w-20 h-20 rounded-full bg-white p-1.5 transition-transform active:scale-90 shadow-2xl">
+                    <button type="button" id="btn-capture"
+                      class="group relative w-24 h-24 rounded-full bg-white p-1.5 transition-transform active:scale-90 shadow-2xl">
+                      <div
+                        class="w-full h-full rounded-full border-[4px] border-black/10 flex items-center justify-center">
                         <div
-                          class="w-full h-full rounded-full border-[3px] border-black/10 flex items-center justify-center">
-                          <div
-                            class="w-14 h-14 bg-white rounded-full group-hover:scale-95 transition-transform shadow-inner border border-slate-200">
-                          </div>
+                          class="w-16 h-16 bg-white rounded-full group-hover:scale-95 transition-transform shadow-inner border border-slate-200">
                         </div>
-                      </button>
-                    </div>
+                      </div>
+                    </button>
 
-                    <!-- Right: Empty for balance -->
-                    <div class="flex justify-end pr-4">
-                      <!-- Can add gallery preview here later -->
-                    </div>
+                    <button type="button" id="btn-toggle-torch"
+                      class="hidden p-5 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all active:scale-90">
+                      <i data-lucide="zap" class="w-8 h-8"></i>
+                    </button>
                   </div>
                 </div>
               </div>

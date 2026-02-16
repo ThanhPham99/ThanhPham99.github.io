@@ -170,22 +170,30 @@ async function capturePhoto() {
 
   const context = capture_canvas.getContext('2d');
 
-  // High quality capture
-  capture_canvas.width = video.videoWidth;
-  capture_canvas.height = video.videoHeight;
+  // Square capture logic
+  const video_width = video.videoWidth;
+  const video_height = video.videoHeight;
+  const size = Math.min(video_width, video_height);
+  const sx = (video_width - size) / 2;
+  const sy = (video_height - size) / 2;
+
+  // Fix size at 320x320 as requested
+  capture_canvas.width = 320;
+  capture_canvas.height = 320;
 
   // Flip if front camera
   if (current_camera_mode === 'user') {
-    context.translate(capture_canvas.width, 0);
+    context.translate(320, 0);
     context.scale(-1, 1);
   }
 
-  context.drawImage(video, 0, 0, capture_canvas.width, capture_canvas.height);
+  // Draw ONLY the center square from video to canvas
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(video, sx, sy, size, size, 0, 0, 320, 320);
 
   const data_url = capture_canvas.toDataURL('image/jpeg', 0.9);
-  const resized = await resizeImage(data_url, 320); // Increased quality for mobile preview
-
-  updatePreview(resized);
+  updatePreview(data_url);
   stopCamera();
 }
 
@@ -198,30 +206,28 @@ function updatePreview(base64) {
 }
 
 // --- Image Processing ---
-async function resizeImage(base64Str, maxWidth = 320) {
+async function resizeImage(base64Str, target_size = 320) {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = base64Str;
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-
-      if (width > maxWidth) {
-        height = (maxWidth / width) * height;
-        width = maxWidth;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = target_size;
+      canvas.height = target_size;
       const ctx = canvas.getContext('2d');
+
+      // Square cropping logic
+      const min_dim = Math.min(img.width, img.height);
+      const sx = (img.width - min_dim) / 2;
+      const sy = (img.height - min_dim) / 2;
 
       // Better quality drawing
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7)); // Balanced quality and size
+      // Draw centered square and resize
+      ctx.drawImage(img, sx, sy, min_dim, min_dim, 0, 0, target_size, target_size);
+      resolve(canvas.toDataURL('image/jpeg', 0.8)); // Balanced quality and size
     };
   });
 }
