@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-slate-50">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goods Manager | Quản lý kho hàng hiện đại</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+            },
+          },
+          animation: {
+            'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+            'scale-in': 'scaleIn 0.2s ease-out forwards',
+          },
+          keyframes: {
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            scaleIn: {
+              '0%': { opacity: '0', transform: 'scale(0.95)' },
+              '100%': { opacity: '1', transform: 'scale(1)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+            .view { @apply hidden opacity-0; }
+            .view.active { @apply block animate-fade-in-up; }
+            .btn-primary { @apply flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-2xl shadow-lg shadow-brand-500/30 transition-all active:scale-95 disabled:opacity-50; }
+            .btn-secondary { @apply flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl border border-slate-200 shadow-sm transition-all active:scale-95; }
+            .btn-danger { @apply flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white font-semibold rounded-xl transition-all active:scale-95; }
+            .input-field { @apply w-full px-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all placeholder:text-slate-400; }
+            .card-premium { @apply bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/60 overflow-hidden transition-all hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1; }
+        }
+    </style>
+</head>
+
+<body class="h-full overflow-x-hidden text-slate-900">
+  <div id="app" class="min-h-full">
+
+    <!-- DASHBOARD VIEW -->
+    <main id="dashboard-view" class="view active">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+          <div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-2">Kho hàng của tôi</h1>
+            <p class="text-lg text-slate-500 font-medium">Theo dõi và quản lý danh mục sản phẩm của bạn.</p>
+          </div>
+          <button id="btn-add-product" class="btn-primary text-lg">
+            <i data-lucide="plus" class="w-6 h-6"></i>
+            Thêm sản phẩm
+          </button>
+        </header>
+
+        <!-- Search Section -->
+        <div class="relative max-w-2xl mb-12 group">
+          <div
+            class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+            <i data-lucide="search" class="w-6 h-6"></i>
+          </div>
+          <input type="text" id="search-input"
+            class="w-full pl-14 pr-6 py-5 bg-white border border-slate-200 rounded-[1.5rem] shadow-xl shadow-slate-200/40 focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-lg"
+            placeholder="Tìm kiếm theo tên sản phẩm...">
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <!-- Dynamic Content -->
+        </div>
+      </div>
+    </main>
+
+    <!-- FORM VIEW -->
+    <main id="form-view" class="view bg-slate-50">
+      <div class="max-w-3xl mx-auto px-4 py-10 sm:py-16">
+        <div class="flex items-center gap-4 mb-10">
+          <button id="btn-back"
+            class="p-3 bg-white rounded-2xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors">
+            <i data-lucide="arrow-left" class="w-6 h-6 text-slate-600"></i>
+          </button>
+          <h1 id="form-title" class="text-3xl font-extrabold text-slate-900">Thêm sản phẩm</h1>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-slate-200/80 border border-slate-100">
+          <form id="product-form" class="space-y-8">
+            <input type="hidden" id="product-id">
+
+            <!-- Image Upload Area -->
+            <div class="space-y-4">
+              <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Hình ảnh hàng hóa</label>
+
+              <!-- Camera Box -->
+              <div id="camera-section"
+                class="hidden relative rounded-[2rem] overflow-hidden bg-black aspect-[4/3] shadow-2xl">
+                <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div class="absolute bottom-6 inset-x-0 flex justify-center gap-4 px-6">
+                  <button type="button" id="btn-capture" class="btn-primary w-full max-w-[200px]">
+                    <i data-lucide="camera" class="w-5 h-5"></i> Chụp ngay
+                  </button>
+                  <button type="button" id="btn-stop-camera" class="btn-secondary w-full max-w-[120px]">
+                    Đóng
+                  </button>
+                </div>
+              </div>
+
+              <!-- Preview Area -->
+              <div id="image-preview-container"
+                class="group relative aspect-square max-w-[320px] mx-auto rounded-[2rem] border-4 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-200 transition-all cursor-pointer flex flex-col items-center justify-center p-2">
+                <div id="preview-placeholder" class="text-center space-y-3">
+                  <div
+                    class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-md group-hover:scale-110 transition-transform">
+                    <i data-lucide="camera" class="w-10 h-10 text-slate-400 group-hover:text-brand-500"></i>
+                  </div>
+                  <p class="text-slate-500 font-bold group-hover:text-brand-600">Nhấp để thêm ảnh</p>
+                </div>
+                <img id="image-preview-img" src="" alt="Preview"
+                  class="hidden w-full h-full object-contain rounded-[1.8rem]">
+              </div>
+
+              <!-- Buttons -->
+              <div class="grid grid-cols-2 gap-4 max-w-[320px] mx-auto">
+                <button type="button" id="btn-start-camera" class="btn-secondary py-3 text-sm">
+                  <i data-lucide="aperture" class="w-4 h-4"></i> Camera
+                </button>
+                <button type="button" id="btn-file-trigger" class="btn-secondary py-3 text-sm">
+                  <i data-lucide="upload-cloud" class="w-4 h-4"></i> Tải ảnh
+                </button>
+              </div>
+              <input type="file" id="image-input" accept="image/*" class="hidden">
+              <canvas id="capture-canvas" class="hidden"></canvas>
+            </div>
+
+            <!-- Info Fields -->
+            <div class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Tên sản phẩm</label>
+                  <input type="text" id="product-name" class="input-field text-lg" placeholder="Ví dụ: MacBook Pro M3"
+                    required>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Giá bán (VNĐ)</label>
+                  <input type="number" id="product-price" class="input-field text-lg" placeholder="Ví dụ: 15000000"
+                    min="0" required>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-bold text-slate-500 uppercase tracking-widest">Ghi chú & Chi
+                  tiết</label>
+                <textarea id="product-notes" rows="4" class="input-field"
+                  placeholder="Nhập thêm thông tin về tình trạng, số lượng..."></textarea>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-slate-100">
+              <button type="button" id="btn-cancel" class="btn-secondary text-lg py-4 order-2 sm:order-1">Quay
+                lại</button>
+              <button type="submit" class="btn-primary text-lg py-4 order-1 sm:order-2">
+                <i data-lucide="save" class="w-6 h-6"></i>
+                <span id="submit-btn-text">Lưu sản phẩm</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- IMAGE PREVIEW MODAL -->
+    <div id="image-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center">
+      <div class="absolute inset-0 bg-slate-950/95 backdrop-blur-md cursor-pointer" id="image-modal-close"></div>
+      <div
+        class="relative w-full h-full flex items-center justify-center p-4 md:p-12 animate-scale-in pointer-events-none">
+        <button class="absolute top-6 right-6 text-white/30 hover:text-white transition-colors p-2 pointer-events-auto"
+          onclick="closeImageModal()">
+          <i data-lucide="x" class="w-12 h-12"></i>
+        </button>
+        <img id="modal-full-image" src="" alt="Full Preview"
+          class="w-full h-full object-contain drop-shadow-2xl pointer-events-auto">
+      </div>
+    </div>
+
+    <!-- MODAL OVERLAY (CONFIRM DELETE) -->
+    <div id="modal-container" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md"></div>
+      <div class="relative bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl animate-scale-in text-center">
+        <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="alert-circle" class="w-10 h-10"></i>
+        </div>
+        <h3 class="text-2xl font-extrabold text-slate-900 mb-2">Xác nhận xóa?</h3>
+        <p id="modal-message" class="text-slate-500 font-medium mb-10 leading-relaxed"></p>
+        <div class="grid grid-cols-2 gap-4">
+          <button id="btn-modal-cancel" class="btn-secondary py-4">Hủy</button>
+          <button id="btn-modal-confirm"
+            class="btn-danger !bg-rose-500 !text-white hover:!bg-rose-600 shadow-lg shadow-rose-200 py-4">Đồng
+            ý</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
