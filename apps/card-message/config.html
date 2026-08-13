@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Thiệp Sinh Nhật Mới</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'luxury-gold': '#d4af37',
+                        'luxury-dark': '#0f0814',
+                        'luxury-burgundy': '#a21a24'
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: 
+                radial-gradient(ellipse at 50% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 10% 90%, rgba(158, 42, 43, 0.15) 0%, transparent 40%),
+                linear-gradient(135deg, #07080e 0%, #0e0a17 50%, #050609 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .input-field {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div class="glass-panel rounded-2xl w-full max-w-lg p-8 relative overflow-hidden">
+        <!-- Decor -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-luxury-gold rounded-full mix-blend-screen filter blur-[50px] opacity-20"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-luxury-burgundy rounded-full mix-blend-screen filter blur-[50px] opacity-30"></div>
+
+        <h1 class="font-serif text-3xl font-bold text-luxury-gold mb-2 text-center">Soạn Thiệp Chúc Mừng</h1>
+        <p class="text-sm text-gray-400 text-center mb-8">Viết lời chúc của bạn và hệ thống sẽ tạo một đường link bí mật gửi đến người nhận.</p>
+
+        <form id="configForm" class="space-y-5 relative z-10">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Tiêu đề thiệp</label>
+                <input type="text" id="inputTitle" value="Chúc Mừng Sinh Nhật! 🎂" class="input-field w-full rounded-lg px-4 py-3 text-base" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Nội dung lời chúc</label>
+                <textarea id="inputMessage" rows="4" class="input-field w-full rounded-lg px-4 py-3 text-base resize-none" required>Chúc bạn tuổi mới luôn ngập tràn niềm vui, hạnh phúc và thành công.&#10;&#10;Hãy luôn mỉm cười rạng rỡ nhé! ❤️</textarea>
+                <p class="text-xs text-gray-500 mt-1">Xuống dòng sẽ được giữ nguyên định dạng khi lên thiệp.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Chữ ký (Người gửi)</label>
+                <input type="text" id="inputSignature" value="- Từ một người bạn" class="input-field w-full rounded-lg px-4 py-3 text-base" required>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-luxury-gold to-yellow-600 text-black font-semibold rounded-lg px-4 py-3 mt-4 hover:opacity-90 transition-opacity flex justify-center items-center gap-2">
+                <span>✨</span> Tạo Link Chúc Mừng
+            </button>
+        </form>
+
+        <!-- Result Box -->
+        <div id="resultBox" class="hidden mt-6 p-4 rounded-lg bg-black/40 border border-luxury-gold/30">
+            <p class="text-sm text-luxury-gold mb-2 font-medium">Link thiệp của bạn đã sẵn sàng:</p>
+            <div class="flex gap-2">
+                <input type="text" id="generatedLink" class="input-field w-full rounded pl-3 pr-2 py-2 text-sm text-gray-300 bg-black/50" readonly>
+                <button id="copyBtn" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded px-4 text-sm font-medium transition-colors whitespace-nowrap">
+                    Copy Link
+                </button>
+            </div>
+            <p id="copyToast" class="text-xs text-green-400 mt-2 hidden">✓ Đã copy link vào clipboard!</p>
+        </div>
+    </div>
+
+    <script>
+        function encodeBase64Unicode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+                function toSolidBytes(match, p1) {
+                    return String.fromCharCode('0x' + p1);
+                }));
+        }
+
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('inputTitle').value;
+            const message = document.getElementById('inputMessage').value;
+            const signature = document.getElementById('inputSignature').value;
+
+            const payload = {
+                title: title,
+                message: message,
+                signature: signature
+            };
+
+            const jsonString = JSON.stringify(payload);
+            const encodedString = encodeBase64Unicode(jsonString);
+
+            // Xây dựng URL hiện tại trỏ về index.html
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+            // Fix: Sử dụng encodeURIComponent cho encodedString để tránh bị lỗi ký tự '+' trên URL biến thành khoảng trắng
+            const finalLink = `${baseUrl}/index.html?data=${encodeURIComponent(encodedString)}`;
+
+            const linkInput = document.getElementById('generatedLink');
+            linkInput.value = finalLink;
+
+            document.getElementById('resultBox').classList.remove('hidden');
+            document.getElementById('copyToast').classList.add('hidden');
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const linkInput = document.getElementById('generatedLink');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            navigator.clipboard.writeText(linkInput.value).then(() => {
+                document.getElementById('copyToast').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('copyToast').classList.add('hidden');
+                }, 3000);
+            }).catch(err => {
+                console.error('Lỗi copy:', err);
+            });
+        });
+    </script>
+</body>
+</html>

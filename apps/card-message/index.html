@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiệp Chúc Mừng Sinh Nhật</title>
+
+    <!-- Google Fonts cho UI/UX Pro Max -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Dancing+Script:wght@500;700&family=Great+Vibes&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+</head>
+
+<body>
+    <div id="app-root">
+        <!-- Vanta.js Background -->
+        <div id="vanta-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
+
+        <!-- UI Overlay -->
+        <div id="ui-layer">
+            <div class="instruction" id="instruction">Ấn vào thiệp để mở ra điều kỳ diệu!</div>
+        </div>
+
+        <!-- 3D CSS Scene -->
+        <div class="scene">
+            <!-- Bóng đổ mềm dưới phong bì (tạo cảm giác vật thể có khối lượng) -->
+            <div class="ground-shadow" id="ground-shadow"></div>
+
+            <!-- Phong bì tổng thể -->
+            <div class="envelope-wrapper" id="envelope-wrapper">
+
+                <!-- Mặt sau của phong bì -->
+                <div class="env-back"></div>
+
+                <!-- Tấm thiệp nằm bên trong (DOM order quyết định Z-index) -->
+                <div class="card-wrapper" id="card-wrapper">
+                    <div class="card-float" id="card-float">
+                        <div class="card-glow" id="card-glow"></div>
+                        <canvas id="card-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Mặt trước của phong bì (gồm 2 cánh hai bên và cánh dưới) -->
+                <div class="env-front">
+                    <div class="flap flap-left"></div>
+                    <div class="flap flap-right"></div>
+                    <div class="flap flap-bottom"></div>
+                </div>
+
+                <!-- Nắp phong bì (Cánh trên) -->
+                <div class="env-flap-top" id="env-flap-top">
+                    <div class="flap flap-top"></div>
+                    <!-- Dấu sáp đỏ: tách 2 mảnh để nứt vỡ khi mở -->
+                    <div class="wax-seal" id="wax-seal">
+                        <div class="wax-halo" id="wax-halo"></div>
+                        <div class="wax-piece wax-left" id="wax-left">
+                            <div class="wax-face"></div>
+                        </div>
+                        <div class="wax-piece wax-right" id="wax-right">
+                            <div class="wax-face"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Lớp hiệu ứng hạt lấp lánh -->
+        <canvas id="fx-canvas"></canvas>
+    </div>
+
+    <!-- JS Logic -->
+    <script src="script.js"></script>
+
+    <!-- Three.js and Vanta.js for Background Effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+    <script>
+        // Khởi tạo Vanta Birds hiệu ứng chuyển động mượt mà, phân tán phủ kín màn hình
+        VANTA.BIRDS({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            backgroundColor: 0x070a16, // Nền xanh đen Midnight Sapphire huyền bí
+            color1: 0xffdf78, // Ánh vàng Champagne Gold sáng lấp lánh
+            color2: 0xdb2777, // Điểm xuyết sắc hồng ngọc / Rose Gold ấm áp
+            colorMode: "lerpGradient", // Chuyển màu gradient mượt mà trên cánh chim
+            birdSize: 1.0, // Tăng nhẹ kích thước để nhìn rõ ràng, sắc nét
+            wingSpan: 24.00, // Sải cánh rộng, bay mềm mại
+            speedLimit: 3.5, // Tốc độ lướt bay sống động
+            separation: 100.00, // Tăng mạnh độ tách đàn để chim bay tỏa rộng khắp 4 góc màn hình
+            alignment: 1.00, // Giữ hướng bay đồng điệu tự nhiên
+            cohesion: 100.00, // Giảm độ tụ cụm để chim không bị dồn cục vào một chỗ
+            quantity: 4.00 // Mật độ tối đa giúp phủ kín không gian
+        });
+    </script>
+</body>
+
+</html>

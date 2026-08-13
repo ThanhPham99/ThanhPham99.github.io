@@ -1,0 +1,496 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    background-color: #070a16;
+    background-image:
+        radial-gradient(ellipse at 50% 40%, rgba(255, 223, 120, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 85% 15%, rgba(219, 39, 119, 0.09) 0%, transparent 40%),
+        radial-gradient(circle at 15% 85%, rgba(15, 23, 42, 0.6) 0%, transparent 50%);
+}
+
+/* -------------------------------------------
+   APP ROOT (Ép hiển thị Landscape trên mọi màn hình)
+------------------------------------------- */
+#app-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+@media (orientation: portrait) {
+    #app-root {
+        width: 100vh;
+        height: 100vw;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
+    }
+}
+
+/* -------------------------------------------
+   BACKGROUND & OVERLAY
+------------------------------------------- */
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Glassmorphism Shimmer Text (Không còn click được) */
+.instruction {
+    position: absolute;
+    top: 8%;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 400;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    padding: 12px 28px;
+    border-radius: 40px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    overflow: hidden;
+    animation: float-pulse 4s ease-in-out infinite;
+}
+
+.instruction::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), rgba(255, 255, 255, 0.4), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 3.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+
+    25% {
+        left: 200%;
+    }
+
+    100% {
+        left: 200%;
+    }
+}
+
+@keyframes float-pulse {
+
+    0%,
+    100% {
+        transform: translateY(0);
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    50% {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 40px rgba(212, 175, 55, 0.2);
+    }
+}
+
+/* -------------------------------------------
+   CSS 3D SCENE & ENVELOPE (Tỉ lệ chuẩn 3:2 Landscape)
+------------------------------------------- */
+:root {
+    --env-width: min(560px, 78vw);
+    --env-height: calc(var(--env-width) * 2 / 3);
+    --env-half-width: calc(var(--env-width) / 2);
+    --env-half-height: calc(var(--env-height) / 2);
+    --seal-size: 60px;
+}
+
+@media (max-height: 520px) {
+    :root {
+        --env-height: min(340px, 70vh);
+        --env-width: calc(var(--env-height) * 1.5);
+        --env-half-width: calc(var(--env-width) / 2);
+        --env-half-height: calc(var(--env-height) / 2);
+        --seal-size: 52px;
+    }
+}
+
+@media (orientation: portrait) {
+    :root {
+        /* Khi màn hình dọc (đã xoay ngang qua app-root): chiều cao hiển thị tương ứng 100vw */
+        --env-height: min(340px, 68vw);
+        --env-width: calc(var(--env-height) * 1.5);
+        --env-half-width: calc(var(--env-width) / 2);
+        --env-half-height: calc(var(--env-height) / 2);
+        --seal-size: 54px;
+    }
+}
+
+.scene {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1400px;
+    perspective-origin: 50% 45%;
+    z-index: 10;
+}
+
+/* Bóng đổ mềm dưới phong bì */
+.ground-shadow {
+    position: absolute;
+    width: calc(var(--env-width) * 0.82);
+    height: calc(var(--env-height) * 0.22);
+    top: 50%;
+    margin-top: calc(var(--env-half-height) * 0.92);
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, transparent 72%);
+    filter: blur(18px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Hiệu ứng hào quang vàng đồng & ánh hồng ngọc phía sau phong bì */
+.scene::before {
+    content: '';
+    position: absolute;
+    width: 650px;
+    height: 480px;
+    max-width: 95vw;
+    max-height: 85vh;
+    background: radial-gradient(ellipse at center, rgba(255, 223, 120, 0.16) 0%, rgba(219, 39, 119, 0.08) 45%, transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+    animation: aura-breathe 6s ease-in-out infinite alternate;
+}
+
+@keyframes aura-breathe {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+    }
+
+    100% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+}
+
+.envelope-wrapper {
+    position: relative;
+    width: var(--env-width);
+    height: var(--env-height);
+    transform-style: preserve-3d;
+    cursor: pointer;
+    /* Cho thấy có thể click vào phong bì */
+    z-index: 2;
+    /* GSAP điều khiển toàn bộ transform (idle float + parallax theo chuột) */
+    will-change: transform;
+}
+
+/* Lớp chung cho các mảnh phong bì */
+.env-back,
+.env-front,
+.env-flap-top,
+.card-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Mặt sau (Bên trong phong bì - Lót Vàng Gold) */
+.env-back {
+    background: linear-gradient(135deg, #e3c473 0%, #cca044 50%, #9e731b 100%);
+    border-radius: 4px;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
+    /* Đẩy sâu về sau để tuyệt đối không z-fighting với tấm thiệp */
+    transform: translateZ(-6px) scale(1.005);
+    overflow: hidden;
+}
+
+/* Thêm họa tiết xước/nhũ vàng nhẹ cho lớp lót */
+.env-back::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255, 255, 255, 0.05) 2px, rgba(255, 255, 255, 0.05) 4px);
+    pointer-events: none;
+}
+
+/* Mặt trước (Hai cánh bên và cánh dưới) */
+.env-front {
+    /* Nhô ra trước thiệp, scale bù lại độ phóng đại do perspective */
+    transform: translateZ(7px) scale(0.995);
+    pointer-events: none;
+}
+
+/* Kỹ thuật dùng border tạo hình tam giác cho các nắp gấp */
+.flap {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* Cánh trái (Bóng tối trung bình) */
+.flap-left {
+    top: 0;
+    left: 0;
+    border-width: var(--env-half-height) 0 var(--env-half-height) var(--env-half-width);
+    border-color: transparent transparent transparent #E8E3D8;
+    filter: drop-shadow(3px 0 5px rgba(0, 0, 0, 0.15));
+}
+
+/* Cánh phải (Bóng tối đậm nhất - do nguồn sáng từ trái) */
+.flap-right {
+    top: 0;
+    right: 0;
+    border-width: var(--env-half-height) var(--env-half-width) var(--env-half-height) 0;
+    border-color: transparent #E2DCD1 transparent transparent;
+    filter: drop-shadow(-3px 0 5px rgba(0, 0, 0, 0.15));
+}
+
+/* Cánh dưới (Sáng hơn hai bên) */
+.flap-bottom {
+    bottom: 0;
+    left: 0;
+    border-width: 0 var(--env-half-width) var(--env-half-height) var(--env-half-width);
+    border-color: transparent transparent #F0EBE1 transparent;
+    filter: drop-shadow(0 -4px 6px rgba(0, 0, 0, 0.12));
+}
+
+/* Nắp trên (Flap top) */
+.env-flap-top {
+    /* Bản lề nằm đúng mép trên phong bì */
+    transform-origin: 50% 0%;
+    transform: translateZ(9px) scale(0.993);
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+    will-change: transform;
+}
+
+.flap-top {
+    top: 0;
+    left: 0;
+    border-width: var(--env-half-height) var(--env-half-width) 0 var(--env-half-width);
+    /* Màu Ivory sáng nhất do hứng ánh sáng từ trên */
+    border-color: #FAF8F3 transparent transparent transparent;
+    /* Viền Gold lấp lánh nẹp mép phong bì */
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 1.5px 1px rgba(212, 175, 55, 0.7));
+}
+
+/* Dấu Sáp Burgundy Quyền Lực (Wax Seal) */
+.wax-seal {
+    position: absolute;
+    left: 50%;
+    top: var(--env-half-height);
+    width: var(--seal-size);
+    height: var(--seal-size);
+    margin-left: calc(var(--seal-size) / -2);
+    margin-top: calc(var(--seal-size) / -2);
+    transform: translateZ(3px);
+    transform-style: preserve-3d;
+}
+
+/* Quầng sáng phập phồng mời gọi người xem bấm vào */
+.wax-halo {
+    position: absolute;
+    inset: -45%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(255, 223, 120, 0.45) 0%, rgba(219, 39, 119, 0.18) 45%, transparent 70%);
+    filter: blur(8px);
+    animation: halo-pulse 2.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes halo-pulse {
+
+    0%,
+    100% {
+        transform: scale(0.88);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: scale(1.12);
+        opacity: 0.95;
+    }
+}
+
+/* Hai mảnh sáp được cắt theo đường nứt gồ ghề */
+.wax-piece {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+}
+
+.wax-left {
+    clip-path: polygon(0 0, 53% 0, 45% 22%, 56% 45%, 44% 68%, 52% 100%, 0 100%);
+}
+
+.wax-right {
+    clip-path: polygon(53% 0, 100% 0, 100% 100%, 52% 100%, 44% 68%, 56% 45%, 45% 22%);
+}
+
+/* Bề mặt sáp đầy đủ, mỗi mảnh hiển thị một phần nhờ clip-path */
+.wax-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #d4404c 0%, #a01423 38%, #7a0a17 62%, #430107 100%);
+    box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.45),
+        inset 0 2px 6px rgba(255, 255, 255, 0.35),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* Vành trong dập chìm */
+.wax-face::before {
+    content: '';
+    position: absolute;
+    inset: 17%;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.42));
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(255, 255, 255, 0.28);
+}
+
+/* Họa tiết dập chìm trên sáp */
+.wax-face::after {
+    content: '♛';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(var(--seal-size) * 0.42);
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.42);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.22);
+}
+
+/* -------------------------------------------
+   THIỆP (CARD)
+------------------------------------------- */
+.card-wrapper {
+    transform: translateZ(0px);
+    /* Nằm giữa lớp back và front */
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Lớp con phụ trách nhịp trôi bồng bềnh + nghiêng theo chuột */
+.card-float {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* Hào quang vàng bao quanh thiệp khi được rút ra */
+.card-glow {
+    position: absolute;
+    inset: -8%;
+    border-radius: 24px;
+    background: radial-gradient(ellipse at center, rgba(255, 236, 180, 0.5) 0%, rgba(255, 200, 120, 0.22) 45%, transparent 72%);
+    filter: blur(28px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Luxury Card Canvas */
+#card-canvas {
+    width: 90%;
+    height: 90%;
+    border-radius: 6px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+    /* Nằm dưới phong bì */
+    backface-visibility: hidden;
+}
+
+/* Khung phẳng chứa thiệp sau khi mở xong.
+   Thiệp được gỡ khỏi không gian 3D và đặt đúng kích thước pixel thật,
+   kết hợp perspective để hỗ trợ nghiêng 3D theo chuột mượt mà. */
+#card-stage {
+    position: absolute;
+    z-index: 20;
+    perspective: 1200px;
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+
+#card-stage .card-float {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+#card-stage #card-canvas {
+    width: 100%;
+    height: 100%;
+    backface-visibility: visible;
+    border-radius: 6px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+/* -------------------------------------------
+   LỚP HẠT LẤP LÁNH
+------------------------------------------- */
+#fx-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 45;
+    pointer-events: none;
+}
+
+/* Tôn trọng người dùng tắt hiệu ứng chuyển động */
+@media (prefers-reduced-motion: reduce) {
+
+    .instruction,
+    .scene::before,
+    .wax-halo {
+        animation: none !important;
+    }
+}
