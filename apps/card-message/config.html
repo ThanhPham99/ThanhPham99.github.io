@@ -79,6 +79,12 @@
                 <input type="text" id="inputSignature" value="- Từ một người bạn" class="input-field w-full rounded-lg px-4 py-3 text-base" required>
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Link nhạc nền (Tùy chọn)</label>
+                <input type="url" id="inputMusicUrl" placeholder="https://example.com/audio.mp3" class="input-field w-full rounded-lg px-4 py-3 text-base">
+                <p class="text-xs text-gray-500 mt-1">Hỗ trợ link trực tiếp file mp3, m4a, wav, ogg. Để trống nếu không phát nhạc.</p>
+            </div>
+
             <button type="submit" class="w-full bg-gradient-to-r from-luxury-gold to-yellow-600 text-black font-semibold rounded-lg px-4 py-3 mt-4 hover:opacity-90 transition-opacity flex justify-center items-center gap-2">
                 <span>✨</span> Tạo Link Chúc Mừng
             </button>
@@ -108,15 +114,20 @@
         document.getElementById('configForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const title = document.getElementById('inputTitle').value;
+            const title = document.getElementById('inputTitle').value.trim();
             const message = document.getElementById('inputMessage').value;
-            const signature = document.getElementById('inputSignature').value;
+            const signature = document.getElementById('inputSignature').value.trim();
+            const music_url = document.getElementById('inputMusicUrl').value.trim();
 
             const payload = {
                 title: title,
                 message: message,
                 signature: signature
             };
+
+            if (music_url) {
+                payload.music_url = music_url;
+            }
 
             const jsonString = JSON.stringify(payload);
             const encodedString = encodeBase64Unicode(jsonString);

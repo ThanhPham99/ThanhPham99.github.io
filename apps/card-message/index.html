@@ -27,7 +27,26 @@
         <!-- UI Overlay -->
         <div id="ui-layer">
             <div class="instruction" id="instruction">Ấn vào thiệp để mở ra điều kỳ diệu!</div>
+
+            <!-- Floating Music Button -->
+            <button id="music-btn" class="music-btn hidden" aria-label="Bật/Tắt nhạc nền" title="Bật/Tắt nhạc nền">
+                <div class="music-disc-icon">
+                    <svg class="music-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <div class="music-note-badge">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="music-muted-bar"></div>
+            </button>
         </div>
+
+        <!-- Audio Element -->
+        <audio id="bg-audio" loop preload="auto" class="hidden"></audio>
 
         <!-- 3D CSS Scene -->
         <div class="scene">

@@ -5,7 +5,8 @@ const encodedData = urlParams.get('data');
 let cardData = {
     title: "Chúc Mừng Sinh Nhật! 🎂",
     message: "Chúc bạn tuổi mới luôn ngập tràn niềm vui, hạnh phúc và thành công.\nHãy luôn mỉm cười rạng rỡ nhé! ❤️",
-    signature: "- Từ một người bạn"
+    signature: "- Từ một người bạn",
+    music_url: ""
 };
 
 if (encodedData) {
@@ -17,6 +18,7 @@ if (encodedData) {
         if (parsed.title) cardData.title = parsed.title;
         if (parsed.message) cardData.message = parsed.message;
         if (parsed.signature) cardData.signature = parsed.signature;
+        if (parsed.music_url) cardData.music_url = parsed.music_url;
     } catch (e) {
         console.error("Lỗi giải mã nội dung URL:", e);
     }
@@ -225,6 +227,102 @@ const groundShadow = document.getElementById('ground-shadow');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let isOpen = false;
+
+/* =====================================================================
+   AUDIO CONTROLLER (Nhạc nền & Điều khiển âm thanh)
+===================================================================== */
+const music_btn = document.getElementById('music-btn');
+const bg_audio = document.getElementById('bg-audio');
+const TARGET_AUDIO_VOLUME = 0.7;
+
+let is_audio_initialized = false;
+let is_audio_playing = false;
+
+function playMusic() {
+    if (!bg_audio || !cardData.music_url) return;
+
+    if (!is_audio_initialized) {
+        bg_audio.src = cardData.music_url;
+        bg_audio.volume = 0;
+        is_audio_initialized = true;
+    }
+
+    const play_promise = bg_audio.play();
+    if (play_promise !== undefined) {
+        play_promise.then(() => {
+            is_audio_playing = true;
+            if (music_btn) {
+                music_btn.classList.remove('is-paused');
+                music_btn.classList.add('is-playing');
+            }
+            gsap.to(bg_audio, {
+                volume: TARGET_AUDIO_VOLUME,
+                duration: 1.5,
+                ease: 'power1.out',
+                overwrite: 'auto'
+            });
+        }).catch(() => {
+            // Trình duyệt chặn autoplay khi chưa có tương tác người dùng
+            is_audio_playing = false;
+            if (music_btn) {
+                music_btn.classList.remove('is-playing');
+                music_btn.classList.add('is-paused');
+            }
+            // Lắng nghe tương tác đầu tiên để kích hoạt phát nhạc
+            const handleFirstInteraction = () => {
+                playMusic();
+            };
+            window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+            window.addEventListener('keydown', handleFirstInteraction, { once: true });
+        });
+    }
+}
+
+function pauseMusic() {
+    if (!bg_audio) return;
+    gsap.to(bg_audio, {
+        volume: 0,
+        duration: 0.4,
+        ease: 'power1.in',
+        onComplete: () => {
+            bg_audio.pause();
+        }
+    });
+    is_audio_playing = false;
+    if (music_btn) {
+        music_btn.classList.remove('is-playing');
+        music_btn.classList.add('is-paused');
+    }
+}
+
+function toggleMusic() {
+    if (is_audio_playing) {
+        pauseMusic();
+    } else {
+        playMusic();
+    }
+}
+
+function initAudio() {
+    if (!cardData.music_url || !bg_audio || !music_btn) return;
+
+    music_btn.classList.remove('hidden');
+
+    music_btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMusic();
+    });
+
+    bg_audio.addEventListener('error', (err) => {
+        console.warn("Không thể tải file âm thanh:", err);
+        music_btn.classList.add('hidden');
+    });
+
+    // Thử kích hoạt phát nhạc ngay khi load
+    playMusic();
+}
+
+initAudio();
 
 /* =====================================================================
    LỚP HẠT LẤP LÁNH (Sparkle / Confetti Layer)
@@ -516,6 +614,11 @@ envelopeWrapper.addEventListener('click', openCard);
 function openCard() {
     if (isOpen) return;
     isOpen = true;
+
+    // Kích hoạt phát nhạc khi mở thiệp nếu chưa chạy
+    if (cardData.music_url && !is_audio_playing) {
+        playMusic();
+    }
 
     envelopeWrapper.style.cursor = 'default';
     idleFloat.kill();
