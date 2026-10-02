@@ -74,16 +74,31 @@ export function isDateStr(s) {
   return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
 }
 
-export function formatDate(dateStr, lang = 'vi') {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Intl.DateTimeFormat(LOCALES[lang] ?? LOCALES.vi, { day: '2-digit', month: '2-digit', year: 'numeric' })
-    .format(new Date(y, m - 1, d));
+// Dates are always shown and typed as dd/mm/yyyy, whatever the UI language.
+export function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
 }
 
-// Compact axis label (day/month in the locale's order).
-export function formatShortDate(dateStr, lang = 'vi') {
+// Compact axis label (dd/mm).
+export function formatShortDate(dateStr) {
   const [, m, d] = dateStr.split('-');
-  return lang === 'en' ? `${m}/${d}` : `${d}/${m}`;
+  return `${d}/${m}`;
+}
+
+// "23/03/2026", "5/1/2026", "05-01-2026", "05.01.2026" → "2026-03-23"; null when not a real date.
+export function parseDisplayDate(input) {
+  const match = String(input ?? '').trim().match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+  if (!match) return null;
+  const pad = (v) => v.padStart(2, '0');
+  const iso = `${match[3]}-${pad(match[2])}-${pad(match[1])}`;
+  return isDateStr(iso) ? iso : null;
+}
+
+// Keeps only digits and inserts the slashes: "23032026" → "23/03/2026".
+export function maskDateInput(input) {
+  const digits = String(input ?? '').replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join('/');
 }
 
 export function progress(item) {

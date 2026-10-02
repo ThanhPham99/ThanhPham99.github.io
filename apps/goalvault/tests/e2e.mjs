@@ -78,6 +78,8 @@ async function runScenario(url, body, width = 1280, { blockedUrls = [] } = {}) {
   exceptions = [];
   // Blocked URLs fail with net::ERR_BLOCKED_BY_CLIENT, exactly like an ad-blocking extension.
   await send('Network.setBlockedURLs', { urls: blockedUrls });
+  // Each scenario starts from a clean device: no remembered language, theme or hide-amounts choice.
+  await send('Storage.clearDataForOrigin', { origin: new URL(BASE).origin, storageTypes: 'local_storage' });
   await send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width < 600 });
   await send('Page.navigate', { url: 'about:blank' });
   await send('Page.navigate', { url });
@@ -223,6 +225,39 @@ const SCENARIOS = [
     await click('Lưu', panel());
     check('untouched edit creates no entry', $$('li', panel()).length === 1);
   `],
+  ['date fields: dd/mm/yyyy typing and calendar picker', DEMO, 1280, `
+    await go('#/category/c1');
+    await click('Thêm mục tiêu');
+    const field = () => $('input[data-date]', panel());
+    check('deadline is a dd/mm/yyyy text field', field()?.type === 'text' && field().placeholder === 'dd/mm/yyyy');
+    type(field(), '23032026');
+    check('typing digits inserts slashes', field().value === '23/03/2026', field().value);
+    fill({ 0: 'Ngày test', 1: '100' });
+    type(field(), '31/02/2026');
+    await click('Lưu', panel());
+    check('impossible date rejected', hasText('Ngày không hợp lệ.', panel()));
+    field().focus(); field().click(); await sleep(300);
+    const cal = $('.flatpickr-calendar.open');
+    check('calendar opens', cal);
+    check('calendar in Vietnamese, week starts Monday', cal && $('.flatpickr-weekday', cal).textContent.trim() === 'T2', cal && $('.flatpickr-weekday', cal).textContent);
+    const day = $$('.flatpickr-day:not(.prevMonthDay):not(.nextMonthDay)', cal).find((d) => d.textContent === '15');
+    day.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); day.click(); await sleep(300);
+    check('picking a day fills dd/mm/yyyy', field().value.split('/')[0] === '15' && field().value.split('/').length === 3 && field().value.length === 10, field().value);
+    const picked = field().value;
+    await click('Lưu', panel());
+    check('goal saved with picked date', modals() === 0, $$('.modal-panel .text-rose-500').map((e) => e.textContent));
+    await openGoal('Ngày test');
+    check('detail shows the picked date', hasText(picked, panel()), panel().textContent);
+    await click('Sửa', panel());
+    check('edit prefills dd/mm/yyyy', field().value === picked, field().value);
+    await esc();
+    await click('Nạp / Rút', panel());
+    const d = new Date(); const p2 = (n) => String(n).padStart(2, '0');
+    check('entry date defaults to today as dd/mm/yyyy', field().value === p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear(), field().value);
+    await esc(); await esc();
+    await click('VI'); await go('#/category/c1'); await click('Add goal');
+    check('same format in English UI', field().placeholder === 'dd/mm/yyyy');
+  `],
   ['tag groups, rename, collapse, untag', DEMO, 1280, `
     await go('#/category/c1');
     const group = (tag) => $$('#app [data-tag-group]').find((g) => g.dataset.tagGroup === tag);
@@ -252,7 +287,7 @@ const SCENARIOS = [
     check('zero amount rejected', hasText('Phải là số lớn hơn 0.', panel()));
     fill({ 0: '1.000.000', 1: '' }); await click('Lưu', panel());
     check('empty date rejected', hasText('Ngày không hợp lệ.', panel()));
-    fill({ 1: '2026-01-15', 2: 'Lương' }); await click('Lưu', panel());
+    fill({ 1: '15/01/2026', 2: 'Lương' }); await click('Lưu', panel());
     check('deposit applied', value() === '31.000.000', value());
     check('backdated entry listed', hasText('15/01/2026 · Nạp', panel()));
     await click('Nạp / Rút', panel()); await click('Rút', panel()); fill({ 0: '31.000.001' }); await click('Lưu', panel());

@@ -1,6 +1,7 @@
 // Modal forms. Each keeps its values in a plain object and re-renders itself on validation errors.
 import {
-  formatInput, formatNumber, isDateStr, normalizeTag, parseNumber, tagsOf, todayStr, validateItemInput,
+  formatDate, formatInput, formatNumber, isDateStr, maskDateInput, normalizeTag, parseDisplayDate, parseNumber, tagsOf, todayStr,
+  validateItemInput,
 } from '../domain.js';
 import { getLang, t } from '../i18n.js';
 import { COLORS, ICONS, colorHex } from '../presets.js';
@@ -32,6 +33,52 @@ export function numberField(label, values, key, { error } = {}) {
     input,
     error ? h('span', { class: 'block text-xs text-rose-500' }, error) : null,
     preview);
+}
+
+// dd/mm/yyyy text field (type it, digits auto-slash) with a calendar picker.
+// values[key] holds the ISO date, '' when empty, or the raw text while it isn't a valid date (so validation can flag it).
+// The picker is bound to a hidden input: bound to the text field, flatpickr would silently "fix" 31/02 or clear bad text.
+export function dateField(label, values, key, { error, hint } = {}) {
+  let picker = null;
+  const toDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  const sync = (text) => {
+    const iso = text ? parseDisplayDate(text) : '';
+    values[key] = iso ?? text;
+    if (picker && iso) picker.setDate(toDate(iso), false);
+  };
+  const input = h('input', {
+    type: 'text', class: 'input tabular-nums pr-11', inputmode: 'numeric', autocomplete: 'off', placeholder: 'dd/mm/yyyy', maxlength: 10,
+    'data-date': 'true', value: isDateStr(values[key]) ? formatDate(values[key]) : (values[key] ?? ''),
+    oninput: (e) => {
+      const masked = maskDateInput(e.target.value);
+      if (masked !== e.target.value) e.target.value = masked;
+      sync(masked);
+    },
+    onclick: () => picker?.open(),
+  });
+  const anchor = h('input', { type: 'hidden', 'data-picker': 'true' });
+  const wrap = h('div', { class: 'date-field relative' },
+    input,
+    h('button', { type: 'button', class: 'absolute right-0 top-0 icon-btn', 'aria-label': t('common.pickDate'), title: t('common.pickDate'), onclick: () => picker?.toggle() },
+      icon('calendar', 'w-5 h-5')),
+    anchor);
+  queueMicrotask(() => {
+    if (!anchor.isConnected || !window.flatpickr) return;
+    picker = window.flatpickr(anchor, {
+      static: true, disableMobile: true, clickOpens: false, dateFormat: 'd/m/Y',
+      locale: { ...(getLang() === 'vi' ? window.flatpickr.l10ns?.vn : {}), firstDayOfWeek: 1 },
+      defaultDate: isDateStr(values[key]) ? toDate(values[key]) : null,
+      onChange: (_dates, text) => {
+        input.value = text;
+        values[key] = text ? parseDisplayDate(text) ?? text : '';
+      },
+    });
+  });
+  return h('label', { class: 'block space-y-1.5' },
+    h('span', { class: 'label' }, label),
+    wrap,
+    error ? h('span', { class: 'block text-xs text-rose-500' }, error)
+      : hint ? h('span', { class: 'block text-xs muted' }, hint) : null);
 }
 
 const footer = (api) => h('div', { class: 'flex justify-end gap-2 pt-2' },
@@ -148,10 +195,7 @@ export function openItemForm(ctx, { categoryId, item = null }) {
       oninput: (e) => { values.tag = e.target.value; },
     }), { hint: t('item.tagHint') }),
     h('datalist', { id: 'goalvault-tags' }, tags.map((tag) => h('option', { value: tag }))),
-    field(t('item.deadline'), h('input', {
-      type: 'date', class: 'input', value: values.deadline,
-      onchange: (e) => { values.deadline = e.target.value; },
-    }), { error: err('deadline'), hint: t('common.optional') }),
+    dateField(t('item.deadline'), values, 'deadline', { error: err('deadline'), hint: t('common.optional') }),
     field(t('item.note'), h('textarea', {
       class: 'input min-h-20', maxlength: 500, rows: 3,
       oninput: (e) => { values.note = e.target.value; },
@@ -228,10 +272,7 @@ export function openEntryForm(ctx, item, entry = null) {
       onclick: () => { values.sign = sign; api.setContent(render()); },
     }, icon(ic, 'w-4 h-4'), t(key)))),
     numberField(t('entry.amount'), values, 'amount', { error: err('amount') }),
-    field(t('entry.date'), h('input', {
-      type: 'date', class: 'input', value: values.date,
-      onchange: (e) => { values.date = e.target.value; },
-    }), { error: err('date') }),
+    dateField(t('entry.date'), values, 'date', { error: err('date') }),
     field(t('entry.note'), h('input', {
       class: 'input', value: values.note, maxlength: 200, placeholder: t('common.optional'),
       oninput: (e) => { values.note = e.target.value; },

@@ -44,3 +44,86 @@ select:disabled {
     scroll-behavior: auto !important;
   }
 }
+
+/* Date picker (flatpickr), anchored under its dd/mm/yyyy text field. */
+.date-field .flatpickr-wrapper {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: 0;
+  height: 0;
+}
+
+.date-field input[data-picker] {
+  display: none;
+}
+
+.date-field .flatpickr-calendar {
+  z-index: 70;
+  font-family: inherit;
+  border-radius: 1rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+}
+
+.date-field .flatpickr-calendar::before,
+.date-field .flatpickr-calendar::after {
+  display: none;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected:focus {
+  background: #059669;
+  border-color: #059669;
+}
+
+.flatpickr-day.today {
+  border-color: #10b981;
+}
+
+html.dark .flatpickr-calendar {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .flatpickr-months .flatpickr-month,
+html.dark .flatpickr-current-month,
+html.dark .flatpickr-current-month .flatpickr-monthDropdown-months,
+html.dark .flatpickr-current-month input.cur-year,
+html.dark .flatpickr-day {
+  color: #e2e8f0;
+  fill: #e2e8f0;
+  background: transparent;
+}
+
+html.dark .flatpickr-current-month .flatpickr-monthDropdown-months option {
+  background: #0f172a;
+}
+
+html.dark span.flatpickr-weekday {
+  color: #94a3b8;
+}
+
+html.dark .flatpickr-months .flatpickr-prev-month svg,
+html.dark .flatpickr-months .flatpickr-next-month svg {
+  fill: #e2e8f0;
+}
+
+html.dark .flatpickr-day:hover,
+html.dark .flatpickr-day:focus {
+  background: #1e293b;
+  border-color: #1e293b;
+}
+
+html.dark .flatpickr-day.prevMonthDay,
+html.dark .flatpickr-day.nextMonthDay,
+html.dark .flatpickr-day.flatpickr-disabled {
+  color: #475569;
+}
+
+html.dark .flatpickr-day.selected {
+  background: #059669;
+  border-color: #059669;
+  color: #fff;
+}

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  applyDelta, averageProgress, formatDate, formatShortDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
+  applyDelta, averageProgress, formatDate, formatShortDate, maskDateInput, parseDisplayDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
   activeCategories, activeItems, normalizeTag, overviewKpis, parseNumber, progress, tagsOf, todayStr, validateItemInput,
 } from '../js/domain.js';
 
@@ -66,7 +66,8 @@ test('dates use the local calendar day', () => {
   assert.equal(todayStr(new Date(2026, 0, 5, 23, 30)), '2026-01-05');
   assert.equal(formatDate('2026-01-05', 'vi'), '05/01/2026');
   assert.equal(formatShortDate('2026-01-05', 'vi'), '05/01');
-  assert.equal(formatShortDate('2026-01-05', 'en'), '01/05');
+  assert.equal(formatShortDate('2026-01-05', 'en'), '05/01');
+  assert.equal(formatDate('2026-01-05', 'en'), '05/01/2026');
 });
 
 test('averageProgress caps each item at 100% and returns null when empty', () => {
@@ -165,4 +166,24 @@ test('only categories are archived: an archived category hides its goals; legacy
   };
   assert.deepEqual(activeCategories(state).map((c) => c.id), ['c1', 'c3']);
   assert.deepEqual(activeItems(state).map((i) => i.id), ['a', 'b', 'd']);
+});
+
+test('parseDisplayDate reads dd/mm/yyyy (and - or . separators) into ISO, rejecting impossible dates', () => {
+  assert.equal(parseDisplayDate('23/03/2026'), '2026-03-23');
+  assert.equal(parseDisplayDate('5/1/2026'), '2026-01-05');
+  assert.equal(parseDisplayDate(' 05-01-2026 '), '2026-01-05');
+  assert.equal(parseDisplayDate('05.01.2026'), '2026-01-05');
+  for (const bad of ['', '31/02/2026', '2026-03-23', '23/13/2026', '23/03/26', 'abc', '00/01/2026']) {
+    assert.equal(parseDisplayDate(bad), null, bad);
+  }
+});
+
+test('maskDateInput inserts slashes while typing digits', () => {
+  assert.equal(maskDateInput('2'), '2');
+  assert.equal(maskDateInput('23'), '23');
+  assert.equal(maskDateInput('230'), '23/0');
+  assert.equal(maskDateInput('23032026'), '23/03/2026');
+  assert.equal(maskDateInput('23/03/2026'), '23/03/2026');
+  assert.equal(maskDateInput('230320261'), '23/03/2026');
+  assert.equal(maskDateInput('ab23c'), '23');
 });

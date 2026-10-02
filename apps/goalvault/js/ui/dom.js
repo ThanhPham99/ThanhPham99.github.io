@@ -26,6 +26,7 @@ export function refreshIcons() {
 }
 
 const openModals = new Set();
+const destroyPickers = (root) => root.querySelectorAll('[data-picker]').forEach((el) => el._flatpickr?.destroy());
 
 export function openModal(build) {
   const root = document.getElementById('modal-root');
@@ -33,6 +34,8 @@ export function openModal(build) {
   const panel = h('div', { class: 'modal-panel', role: 'dialog', 'aria-modal': 'true' });
   const overlay = h('div', { class: 'modal-overlay' }, panel);
   const onKey = (e) => {
+    // An open date picker takes Escape for itself.
+    if (e.key === 'Escape' && document.querySelector('.flatpickr-calendar.open')) return;
     if (e.key === 'Escape' && root.lastElementChild === overlay) api.close();
   };
   const api = {
@@ -40,6 +43,7 @@ export function openModal(build) {
     close() {
       if (!openModals.has(api)) return;
       openModals.delete(api);
+      destroyPickers(panel);
       overlay.remove();
       document.removeEventListener('keydown', onKey);
       cleanups.forEach((fn) => fn());
@@ -48,6 +52,7 @@ export function openModal(build) {
       cleanups.push(fn);
     },
     setContent(node) {
+      destroyPickers(panel);
       panel.replaceChildren(node);
       refreshIcons();
     },
