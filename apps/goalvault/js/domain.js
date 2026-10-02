@@ -15,9 +15,15 @@ export function formatNumber(n, lang = 'vi') {
   return new Intl.NumberFormat(LOCALES[lang] ?? LOCALES.vi, { maximumFractionDigits: 4 }).format(n);
 }
 
-// Accepts "1.000.000", "1,000,000", "1,5", "1.000,5"… regardless of UI language.
-// A lone separator is a thousands separator only when it forms clean 3-digit groups after a non-zero lead.
-export function parseNumber(input) {
+// For prefilling inputs: full precision so an untouched field parses back to the same number.
+export function formatInput(n, lang = 'vi') {
+  return new Intl.NumberFormat(LOCALES[lang] ?? LOCALES.vi, { maximumFractionDigits: 10 }).format(n);
+}
+
+// Accepts "1.000.000", "1,000,000", "1,5", "1.000,5"… in either UI language.
+// A single separator that is the language's decimal mark is a decimal; otherwise a separator is a
+// thousands separator only when it forms clean 3-digit groups after a non-zero lead.
+export function parseNumber(input, lang = 'vi') {
   if (typeof input === 'number') return Number.isFinite(input) ? input : NaN;
   let s = String(input ?? '').replace(/\s/g, '');
   if (!s) return NaN;
@@ -31,9 +37,11 @@ export function parseNumber(input) {
     s = s.replace(dec, '.');
   } else if (lastDot >= 0 || lastComma >= 0) {
     const sep = lastDot >= 0 ? '.' : ',';
+    const single = s.split(sep).length === 2;
     const grouped = new RegExp(`^-?[1-9]\\d{0,2}(\\${sep}\\d{3})+$`);
-    if (grouped.test(s)) s = s.split(sep).join('');
-    else if (s.split(sep).length === 2) s = s.replace(sep, '.');
+    if (single && sep === (lang === 'en' ? '.' : ',')) s = s.replace(sep, '.');
+    else if (grouped.test(s)) s = s.split(sep).join('');
+    else if (single) s = s.replace(sep, '.');
     else return NaN;
   }
   return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
@@ -73,7 +81,7 @@ export function formatDate(dateStr, lang = 'vi') {
 }
 
 export function progress(item) {
-  return item.target > 0 ? item.current / item.target : 0;
+  return item.target > 0 ? roundNum(item.current / item.target) : 0;
 }
 
 export function averageProgress(items) {

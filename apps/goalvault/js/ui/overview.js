@@ -1,5 +1,6 @@
 // Overview: KPIs, per-category progress, average-progress trend, due-soon / attention lists, filterable goal grid.
 import { averageProgress, formatDate, formatPct, itemStatus, overviewKpis, progress, tagsOf, todayStr } from '../domain.js';
+import { createEntryCache } from '../entry-cache.js';
 import { averageSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
@@ -12,8 +13,10 @@ import { openItemDetail } from './item-detail.js';
 import { bar, deadlineText, statusBadge } from './progress.js';
 
 const filters = { categoryId: '', tag: '' };
-// Entries are fetched per item, so the trend is cached until any goal's value/target changes.
+// Entries are read per item and cached by the item's updatedAt/current, so a change re-reads only that item.
 const trend = { key: null, points: null, chart: null, canvas: null, box: null };
+let entryCache = null;
+let cacheStore = null;
 
 const section = (title, body) => h('section', { class: 'space-y-3' }, h('h2', { class: 'font-bold' }, title), body);
 
@@ -75,12 +78,16 @@ function goalsGrid(ctx, active) {
 }
 
 async function drawTrend(ctx, active, today) {
-  const key = `${today}|${active.map((i) => `${i.id}:${i.current}:${i.target}`).join(',')}`;
+  if (cacheStore !== ctx.store) {
+    cacheStore = ctx.store;
+    entryCache = createEntryCache((id) => ctx.store.listEntries(id));
+  }
+  const key = `${today}|${active.map((i) => `${i.id}:${i.current}:${i.target}:${i.updatedAt}`).join(',')}`;
   if (trend.key !== key) {
     trend.key = key;
     trend.points = null;
     try {
-      const rows = await Promise.all(active.map(async (item) => ({ item, entries: await ctx.store.listEntries(item.id) })));
+      const rows = await entryCache.rowsFor(active);
       if (trend.key !== key) return;
       trend.points = averageSeries(rows, today);
     } catch (err) {

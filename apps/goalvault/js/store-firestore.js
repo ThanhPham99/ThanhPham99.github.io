@@ -1,7 +1,7 @@
 // Firestore implementation of the store contract.
 // Layout: users/{uid}, users/{uid}/categories/{id}, users/{uid}/items/{id}, users/{uid}/items/{id}/entries/{id}.
 import {
-  collection, doc, getDocs, onSnapshot, orderBy, query, serverTimestamp, setDoc, writeBatch,
+  collection, doc, getDocs, increment, onSnapshot, orderBy, query, serverTimestamp, setDoc, writeBatch,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { applyDelta, entryType, normalizeTag, roundNum, todayStr } from './domain.js';
 
@@ -43,7 +43,9 @@ export function createFirestoreStore(db, uid) {
   const writeChunked = (ops) => {
     for (let i = 0; i < ops.length; i += BATCH_LIMIT) write((b) => ops.slice(i, i + BATCH_LIMIT).forEach((op) => op(b)));
   };
-  const setItemCurrent = (b, itemId, current) => b.update(itemRef(itemId), { current, updatedAt: serverTimestamp() });
+  // Apply the change as a server-side increment so concurrent offline writes from several devices all count;
+  // applyDelta still pre-checks against the cached value, and the rules reject a resolved current < 0.
+  const changeCurrent = (b, itemId, delta) => b.update(itemRef(itemId), { current: increment(delta), updatedAt: serverTimestamp() });
 
   return {
     setErrorHandler(fn) {
@@ -120,9 +122,9 @@ export function createFirestoreStore(db, uid) {
       const it = findItem(itemId);
       const delta = roundNum(value - it.current);
       if (delta === 0) return;
-      const next = applyDelta(it.current, delta);
+      applyDelta(it.current, delta);
       write((b) => {
-        setItemCurrent(b, itemId, next);
+        changeCurrent(b, itemId, delta);
         b.set(doc(entriesCol(itemId)), { amount: delta, date: todayStr(), note, type: 'adjust', createdAt: serverTimestamp() });
       });
     },
@@ -140,28 +142,29 @@ export function createFirestoreStore(db, uid) {
     },
     addEntry(itemId, { amount, date, note = '' }) {
       assertAmount(amount);
-      const next = applyDelta(findItem(itemId).current, amount);
+      applyDelta(findItem(itemId).current, amount);
       const ref = doc(entriesCol(itemId));
       write((b) => {
-        setItemCurrent(b, itemId, next);
+        changeCurrent(b, itemId, amount);
         b.set(ref, { amount, date, note, type: entryType(amount), createdAt: serverTimestamp() });
       });
       return ref.id;
     },
     updateEntry(itemId, entry, { amount, date, note = '' }) {
       assertAmount(amount);
-      const next = applyDelta(findItem(itemId).current, amount - entry.amount);
+      const delta = roundNum(amount - entry.amount);
+      applyDelta(findItem(itemId).current, delta);
       write((b) => {
-        setItemCurrent(b, itemId, next);
+        changeCurrent(b, itemId, delta);
         b.update(doc(entriesCol(itemId), entry.id), {
           amount, date, note, type: entry.type === 'adjust' ? 'adjust' : entryType(amount),
         });
       });
     },
     deleteEntry(itemId, entry) {
-      const next = applyDelta(findItem(itemId).current, -entry.amount);
+      applyDelta(findItem(itemId).current, -entry.amount);
       write((b) => {
-        setItemCurrent(b, itemId, next);
+        changeCurrent(b, itemId, -entry.amount);
         b.delete(doc(entriesCol(itemId), entry.id));
       });
     },

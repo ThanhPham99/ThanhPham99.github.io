@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  applyDelta, averageProgress, formatDate, formatNumber, formatPct, groupCategoryItems, itemStatus,
-  normalizeTag, overviewKpis, parseNumber, tagsOf, todayStr, validateItemInput,
+  applyDelta, averageProgress, formatDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
+  normalizeTag, overviewKpis, parseNumber, progress, tagsOf, todayStr, validateItemInput,
 } from '../js/domain.js';
 
 const at = (y, m, d) => new Date(y, m - 1, d).getTime();
@@ -29,8 +29,29 @@ test('formatNumber follows the locale and round-trips through parseNumber', () =
   assert.equal(formatNumber(1234567.5, 'vi'), '1.234.567,5');
   assert.equal(formatNumber(1234567.5, 'en'), '1,234,567.5');
   for (const lang of ['vi', 'en']) {
-    for (const n of [0.125, 0.5, 12, 1000, 1000.125, 1234567.5]) assert.equal(parseNumber(formatNumber(n, lang)), n, `${lang} ${n}`);
+    for (const n of [0.125, 0.5, 12, 1000, 1000.125, 1234567.5]) assert.equal(parseNumber(formatNumber(n, lang), lang), n, `${lang} ${n}`);
   }
+});
+
+test('a lone separator matching the UI language decimal mark is a decimal', () => {
+  assert.equal(parseNumber('1,125', 'vi'), 1.125);
+  assert.equal(parseNumber('1.125', 'en'), 1.125);
+  assert.equal(parseNumber('1,125', 'en'), 1125);
+  assert.equal(parseNumber('1.125', 'vi'), 1125);
+  assert.equal(parseNumber('1,5', 'en'), 1.5);
+  assert.equal(parseNumber('1,000,000', 'vi'), 1e6);
+});
+
+test('prefilled input values round-trip exactly, including 3 and 8+ decimals', () => {
+  for (const lang of ['vi', 'en']) {
+    for (const n of [1.125, 12.345, 999.999, 2.375, 0.00012345, 1.23456, 1234567.891]) {
+      assert.equal(parseNumber(formatInput(n, lang), lang), n, `${lang} ${n}`);
+    }
+  }
+});
+
+test('progress tolerates float drift from summed decimals', () => {
+  assert.equal(progress({ current: 0.7 + 0.1, target: 0.8 }), 1);
 });
 
 test('formatPct never shows 100% for an unfinished goal', () => {

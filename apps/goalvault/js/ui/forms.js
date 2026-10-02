@@ -1,6 +1,6 @@
 // Modal forms. Each keeps its values in a plain object and re-renders itself on validation errors.
 import {
-  formatNumber, isDateStr, normalizeTag, parseNumber, tagsOf, todayStr, validateItemInput,
+  formatInput, formatNumber, isDateStr, normalizeTag, parseNumber, tagsOf, todayStr, validateItemInput,
 } from '../domain.js';
 import { getLang, t } from '../i18n.js';
 import { COLORS, ICONS, colorHex } from '../presets.js';
@@ -19,7 +19,7 @@ export function numberField(label, values, key, { error } = {}) {
   const preview = h('span', { class: 'block text-xs text-slate-500 dark:text-slate-400 tabular-nums' });
   const update = () => {
     const raw = values[key];
-    const n = parseNumber(raw);
+    const n = parseNumber(raw, getLang());
     preview.textContent = !raw ? '' : Number.isNaN(n) ? t('error.number') : `= ${formatNumber(n, getLang())}`;
   };
   const input = h('input', {
@@ -87,10 +87,11 @@ export function openCategoryForm(ctx, category = null) {
 
 export function openItemForm(ctx, { categoryId, item = null }) {
   const lang = getLang();
-  const initialCurrent = item ? formatNumber(item.current, lang) : '';
+  const initialCurrent = item ? formatInput(item.current, lang) : '';
+  const initialTarget = item ? formatInput(item.target, lang) : '';
   const values = {
     name: item?.name ?? '',
-    target: item ? formatNumber(item.target, lang) : '',
+    target: initialTarget,
     current: initialCurrent,
     tag: item?.tag ?? '',
     deadline: item?.deadline ?? '',
@@ -107,8 +108,9 @@ export function openItemForm(ctx, { categoryId, item = null }) {
         e.preventDefault();
         const parsed = {
           name: values.name.trim(),
-          target: parseNumber(values.target),
-          current: values.current.trim() === '' ? 0 : parseNumber(values.current),
+          // An untouched prefilled field keeps the stored number exactly.
+          target: item && values.target === initialTarget ? item.target : parseNumber(values.target, lang),
+          current: values.current.trim() === '' ? 0 : parseNumber(values.current, lang),
           tag: normalizeTag(values.tag),
           deadline: values.deadline || null,
           note: values.note.trim(),
@@ -187,7 +189,7 @@ export function openEntryForm(ctx, item, entry = null) {
   const lang = getLang();
   const values = {
     sign: entry && entry.amount < 0 ? -1 : 1,
-    amount: entry ? formatNumber(Math.abs(entry.amount), lang) : '',
+    amount: entry ? formatInput(Math.abs(entry.amount), lang) : '',
     date: entry?.date ?? todayStr(),
     note: entry?.note ?? '',
   };
@@ -200,7 +202,7 @@ export function openEntryForm(ctx, item, entry = null) {
       class: 'space-y-4', novalidate: true,
       onsubmit: async (e) => {
         e.preventDefault();
-        const abs = parseNumber(values.amount);
+        const abs = entry && values.amount === formatInput(Math.abs(entry.amount), lang) ? Math.abs(entry.amount) : parseNumber(values.amount, lang);
         errors = {};
         if (!Number.isFinite(abs) || abs <= 0) errors.amount = 'positive';
         if (!isDateStr(values.date)) errors.date = 'invalidDate';
@@ -239,14 +241,16 @@ export function openEntryForm(ctx, item, entry = null) {
 }
 
 export function openSetCurrent(ctx, item) {
-  const values = { current: formatNumber(item.current, getLang()), note: '' };
+  const lang = getLang();
+  const initial = formatInput(item.current, lang);
+  const values = { current: initial, note: '' };
   let error = null;
   openModal((api) => {
     const render = () => h('form', {
       class: 'space-y-4', novalidate: true,
       onsubmit: async (e) => {
         e.preventDefault();
-        const value = parseNumber(values.current);
+        const value = values.current === initial ? item.current : parseNumber(values.current, lang);
         if (!Number.isFinite(value) || value < 0) {
           error = t('error.nonNegative');
           api.setContent(render());
