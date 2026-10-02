@@ -15,6 +15,11 @@
 
 `firebaseConfig` phía web là thông tin công khai; dữ liệu được bảo vệ bởi rules (mỗi người chỉ đọc/ghi được `users/{uid}` của mình).
 
+## Xử lý sự cố
+
+- **Console báo `net::ERR_BLOCKED_BY_CLIENT` với `firestore.googleapis.com`**: một tiện ích trình duyệt (uBlock Origin, AdGuard, Brave Shields, Ghostery…) đang chặn Firestore. App sẽ hiện cảnh báo đỏ; dữ liệu lúc này chỉ nằm trong trình duyệt, chưa lên máy chủ. Thêm `thanhpham99.github.io` vào danh sách cho phép (allowlist) của tiện ích đó rồi tải lại — dữ liệu đã nhập sẽ tự đồng bộ.
+- **`Cross-Origin-Opener-Policy policy would block the window.closed call`**: cảnh báo vô hại của popup đăng nhập Google trên GitHub Pages; đăng nhập vẫn hoạt động.
+
 ## Chạy local
 
 ```bash

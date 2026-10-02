@@ -1,7 +1,7 @@
 // App frame: sidebar (desktop), bottom tabs (mobile), header with language / theme / account.
 import { getLang, t } from '../i18n.js';
 import { routeHref } from '../route.js';
-import { h, icon, iconButton } from './dom.js';
+import { blockedWarning, h, icon, iconButton } from './dom.js';
 import { getTheme, nextTheme } from './theme.js';
 
 const NAV = [
@@ -58,7 +58,7 @@ export function renderShell(ctx, content) {
           iconButton(THEME_ICONS[theme], () => ctx.setTheme(nextTheme(theme)), `${t('common.theme')}: ${t(`theme.${theme}`)}`),
           userBadge(ctx.user),
           iconButton('log-out', ctx.signOut, t('common.signOut')))),
-      h('main', { class: 'max-w-5xl mx-auto px-4 pt-2 pb-28 md:pb-12' }, content)),
+      h('main', { class: 'max-w-5xl mx-auto px-4 pt-2 pb-28 md:pb-12 space-y-4' }, ctx.firestoreBlocked ? blockedWarning() : null, content)),
     h('nav', { class: 'md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-200 dark:border-slate-800 pb-[env(safe-area-inset-bottom)]' },
       NAV.map(tabLink)));
 }

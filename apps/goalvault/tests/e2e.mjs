@@ -49,6 +49,7 @@ ws.addEventListener('message', (ev) => {
 const send = (method, params = {}) => new Promise((r) => { const id = ++seq; pending.set(id, r); ws.send(JSON.stringify({ id, method, params })); });
 await send('Runtime.enable');
 await send('Page.enable');
+await send('Network.enable');
 
 // In-page helpers available to every scenario body.
 const HELPERS = `
@@ -68,12 +69,15 @@ const HELPERS = `
   const esc = async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); await sleep(200); };
   const openGoal = async (name) => { const b = $$('#app button').find((x) => $$('p', x).some((p) => p.textContent === name)); if (!b) throw new Error('no goal: ' + name); b.click(); await sleep(400); };
   const fill = (values) => { const els = $$('input, textarea', panel()); for (const [i, v] of Object.entries(values)) type(els[i], v); };
+  const waitFor = async (fn, ms = 15000) => { const end = Date.now() + ms; while (Date.now() < end) { if (fn()) return true; await sleep(100); } return false; };
   const results = [];
   const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail: ok ? '' : JSON.stringify(detail) });
 `;
 
-async function runScenario(url, body, width = 1280) {
+async function runScenario(url, body, width = 1280, { blockedUrls = [] } = {}) {
   exceptions = [];
+  // Blocked URLs fail with net::ERR_BLOCKED_BY_CLIENT, exactly like an ad-blocking extension.
+  await send('Network.setBlockedURLs', { urls: blockedUrls });
   await send('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: width < 600 });
   await send('Page.navigate', { url: 'about:blank' });
   await send('Page.navigate', { url });
@@ -91,7 +95,7 @@ async function runScenario(url, body, width = 1280) {
 const DEMO = `${BASE}?demo=1`;
 const SCENARIOS = [
   ['login screen (real Firebase config)', BASE, 1280, `
-    await sleep(3000);
+    await waitFor(() => btn('Đăng nhập với Google'));
     check('Google button shown', btn('Đăng nhập với Google'));
     check('demo link shown', $('a[href="?demo=1"]'));
     await click('English');
@@ -99,6 +103,18 @@ const SCENARIOS = [
     check('html lang en', document.documentElement.lang === 'en');
     await click('Tiếng Việt');
     check('login back to Vietnamese', btn('Đăng nhập với Google'));
+  `],
+  ['blocked Firestore is reported on the login screen', BASE, 1280, `
+    await waitFor(() => $('[data-blocked-warning]'));
+    const warn = $('[data-blocked-warning]');
+    check('warning shown when an extension blocks Firestore', warn && hasText('chặn', warn), document.body.innerText.slice(0, 300));
+    check('warning offers reload', warn && btn('Tải lại', warn));
+    check('sign-in still offered', btn('Đăng nhập với Google'));
+  `, { blockedUrls: ['*firestore.googleapis.com*'] }],
+  ['no warning when Firestore is reachable', BASE, 1280, `
+    await waitFor(() => btn('Đăng nhập với Google'));
+    await sleep(2000);
+    check('no blocked warning', !$('[data-blocked-warning]'));
   `],
   ['overview numbers and lists', DEMO, 1280, `
     await sleep(800);
@@ -416,9 +432,9 @@ const filter = process.argv[2];
 let failed = 0;
 let passed = 0;
 try {
-  for (const [name, url, width, body] of SCENARIOS) {
+  for (const [name, url, width, body, opts] of SCENARIOS) {
     if (filter && !name.includes(filter)) continue;
-    const results = await runScenario(url, body, width);
+    const results = await runScenario(url, body, width, opts);
     const bad = results.filter((r) => !r.ok);
     passed += results.length - bad.length;
     failed += bad.length;

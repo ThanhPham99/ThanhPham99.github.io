@@ -3,6 +3,9 @@ const KEY = 'goalvault.lang';
 
 export const DICT = {
   vi: {
+    'warning.blockedTitle': 'Kết nối tới máy chủ dữ liệu đang bị chặn',
+    'warning.blocked': 'Một tiện ích của trình duyệt (thường là trình chặn quảng cáo như uBlock Origin, AdGuard, Brave Shields) đang chặn Firestore. Dữ liệu chỉ được lưu trên trình duyệt này và chưa đồng bộ lên máy chủ. Hãy tắt chặn cho trang này rồi tải lại.',
+    'warning.reload': 'Tải lại',
     'app.tagline': 'Theo dõi mọi mục tiêu tài chính của bạn ở một nơi.',
     'login.google': 'Đăng nhập với Google',
     'login.setupNeeded': 'Chưa cấu hình Firebase. Điền thông tin vào js/firebase-config.js theo hướng dẫn trong README.md.',
@@ -106,6 +109,9 @@ export const DICT = {
     'error.auth/network-request-failed': 'Lỗi mạng, vui lòng thử lại.',
   },
   en: {
+    'warning.blockedTitle': 'Connection to the data server is blocked',
+    'warning.blocked': 'A browser extension (usually an ad blocker such as uBlock Origin, AdGuard or Brave Shields) is blocking Firestore. Your data is only stored in this browser and is not synced to the server. Allow this site in the blocker, then reload.',
+    'warning.reload': 'Reload',
     'app.tagline': 'Track every financial goal in one place.',
     'login.google': 'Sign in with Google',
     'login.setupNeeded': 'Firebase is not configured. Fill in js/firebase-config.js as described in README.md.',

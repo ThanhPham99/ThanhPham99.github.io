@@ -134,6 +134,16 @@ export async function safely(fn) {
   }
 }
 
+// Shown when an extension blocks Firestore: data then only lives in this browser's cache.
+export function blockedWarning() {
+  return h('div', { class: 'flex items-start gap-3 rounded-2xl bg-rose-50 text-rose-900 dark:bg-rose-950/60 dark:text-rose-100 border border-rose-200 dark:border-rose-900 p-4 text-left', role: 'alert', 'data-blocked-warning': 'true' },
+    icon('shield-alert', 'w-5 h-5 shrink-0 mt-0.5'),
+    h('div', { class: 'flex-1 space-y-2' },
+      h('p', { class: 'text-sm font-semibold' }, t('warning.blockedTitle')),
+      h('p', { class: 'text-sm' }, t('warning.blocked')),
+      h('button', { type: 'button', class: 'btn btn-sm bg-rose-600 hover:bg-rose-700 text-white', onclick: () => location.reload() }, icon('refresh-cw', 'w-4 h-4'), t('warning.reload'))));
+}
+
 export function emptyState(iconName, text, action = null) {
   return h('div', { class: 'card flex flex-col items-center text-center gap-3 py-10' },
     h('span', { class: 'w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300 flex items-center justify-center' }, icon(iconName, 'w-7 h-7')),

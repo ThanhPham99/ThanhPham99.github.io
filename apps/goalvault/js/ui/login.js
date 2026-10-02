@@ -1,9 +1,9 @@
 // Sign-in screen (also shows the "Firebase not configured" notice).
 import { getLang, t } from '../i18n.js';
-import { h, icon } from './dom.js';
+import { blockedWarning, h, icon } from './dom.js';
 import { brand } from './shell.js';
 
-export function renderLogin({ setupNeeded = false, loadError = false, onSignIn, onToggleLang }) {
+export function renderLogin({ setupNeeded = false, loadError = false, blocked = false, onSignIn, onToggleLang }) {
   const notice = setupNeeded || loadError;
   return h('div', { class: 'min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-brand-50 via-white to-sky-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950' },
     h('div', { class: 'card w-full max-w-sm p-8 space-y-6 text-center' },
@@ -11,6 +11,7 @@ export function renderLogin({ setupNeeded = false, loadError = false, onSignIn, 
         h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: onToggleLang }, icon('languages', 'w-4 h-4'), getLang() === 'vi' ? 'English' : 'Tiếng Việt')),
       h('div', { class: 'flex justify-center' }, brand('lg')),
       h('p', { class: 'text-slate-500 dark:text-slate-400' }, t('app.tagline')),
+      blocked ? blockedWarning() : null,
       notice
         ? h('div', { class: 'rounded-2xl bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 p-4 text-sm text-left' },
           t(setupNeeded ? 'login.setupNeeded' : 'login.loadError'))

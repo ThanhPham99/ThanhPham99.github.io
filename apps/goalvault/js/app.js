@@ -1,6 +1,7 @@
 // Bootstrap: picks demo or Firebase, wires auth → store → render loop, routing, language and theme.
 import { getLang, onLangChange, setLang } from './i18n.js';
 import { onPrivacyChange } from './privacy.js';
+import { isFirestoreBlocked } from './connectivity.js';
 import { parseRoute } from './route.js';
 import { createMemoryStore } from './store-memory.js';
 import { seedDemo } from './demo-seed.js';
@@ -30,6 +31,7 @@ const ctx = {
   state: null,
   user: null,
   route: parseRoute(location.hash),
+  firestoreBlocked: false,
   listeners: new Set(),
   render: () => renderApp(),
   onState(fn) {
@@ -62,6 +64,7 @@ function showLogin(options = {}) {
   loginOptions = options;
   appRoot.replaceChildren(renderLogin({
     ...options,
+    blocked: ctx.firestoreBlocked,
     onSignIn: () => safely(() => firebase.signInWithGoogle()),
     onToggleLang: () => setLang(getLang() === 'vi' ? 'en' : 'vi'),
   }));
@@ -102,6 +105,14 @@ function stop() {
   ctx.user = null;
 }
 
+async function checkBlocked() {
+  const blocked = await isFirestoreBlocked();
+  if (blocked === ctx.firestoreBlocked) return;
+  ctx.firestoreBlocked = blocked;
+  if (ctx.state) renderApp();
+  else if (!ctx.store) showLogin(loginOptions);
+}
+
 async function boot() {
   initTheme();
   document.documentElement.lang = getLang();
@@ -122,6 +133,8 @@ async function boot() {
     showLogin({ setupNeeded: true });
     return;
   }
+  checkBlocked();
+  window.addEventListener('online', checkBlocked);
   const { createFirestoreStore } = await import('./store-firestore.js');
   firebase.watchAuth((user) => {
     stop();
