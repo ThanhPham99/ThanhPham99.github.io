@@ -1,0 +1,7 @@
+// Temporary stub — replaced in Task 10.
+import { t } from '../i18n.js';
+import { h } from './dom.js';
+
+export function renderArchive() {
+  return h('h1', { class: 'text-xl font-bold' }, t('archive.title'));
+}

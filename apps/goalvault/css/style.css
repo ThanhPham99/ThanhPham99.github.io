@@ -1,0 +1,12 @@
+/* Goalvault — styles that are awkward in Tailwind utilities. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  cursor: grabbing;
+}
