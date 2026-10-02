@@ -92,7 +92,7 @@ function categorySection(ctx, cat, active) {
     open
       ? h('div', { class: 'border-t border-slate-100 dark:border-slate-800 p-3 sm:p-4' },
         rows.length
-          ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
+          ? h('div', { class: 'grid gap-3' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
           : h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, t('item.empty')))
       : null);
 }

@@ -262,7 +262,7 @@ const SCENARIOS = [
     await go('#/category/c1');
     const group = (tag) => $$('#app [data-tag-group]').find((g) => g.dataset.tagGroup === tag);
     check('group "An toàn" has 2 goals', group('An toàn') && $('.tag-count', group('An toàn')).textContent === '2');
-    check('group shows average', hasText('50%', group('An toàn')), group('An toàn')?.textContent);
+    check('group tag does not show percentage', !hasText('%', $('button', group('An toàn')).parentElement));
     check('untagged goals standalone', !group('Mua laptop') && hasText('Mua laptop'));
     await click('Thêm mục tiêu'); fill({ 0: 'Quỹ con', 1: '10', 3: '  an  toàn ' }); await click('Lưu', panel());
     check('different case makes its own group', group('an toàn'));

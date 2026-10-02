@@ -88,10 +88,8 @@ export function groupCard(ctx, cat, row) {
           icon('tag', 'w-3.5 h-3.5 shrink-0'),
           h('span', { class: 'truncate tag-name' }, row.tag)),
         h('span', { class: 'chip bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300 tag-count' }, String(row.items.length))),
-      h('span', { class: 'text-sm font-bold tabular-nums' }, formatPct(row.avg)),
       iconButton('pencil', () => renameTag(ctx, cat, row.tag), t('tag.rename'))),
-    bar(row.avg, colorHex(cat.color)),
-    open ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, row.items.map((item) => itemCard(ctx, item))) : null);
+    open ? h('div', { class: 'grid gap-3' }, row.items.map((item) => itemCard(ctx, item))) : null);
 }
 
 export function renderCategoryDetail(ctx, categoryId) {
@@ -125,6 +123,6 @@ export function renderCategoryDetail(ctx, categoryId) {
     h('button', { type: 'button', class: 'btn btn-primary w-full sm:w-auto', onclick: () => openItemForm(ctx, { categoryId: cat.id }) },
       icon('plus', 'w-4 h-4'), t('item.new')),
     rows.length
-      ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
+      ? h('div', { class: 'grid gap-3' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
       : emptyState('target', t('item.empty')));
 }
