@@ -26,5 +26,5 @@ python3 -m http.server 8000
 
 ```bash
 node --test apps/goalvault/tests/*.test.js   # logic thuần (Node ≥ 20)
-bash apps/goalvault/tests/smoke.sh '?demo=1' | grep -c 'Goalvault'   # render demo bằng Chrome headless
+node apps/goalvault/tests/e2e.mjs            # kiểm thử giao diện end-to-end trên bản demo (Chrome headless)
 ```
