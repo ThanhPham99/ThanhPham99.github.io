@@ -321,6 +321,29 @@ const SCENARIOS = [
     await click('EN');
     check('back to Vietnamese', hasText('Tổng quan'));
   `],
+  ['hide amounts toggle', DEMO, 1280, `
+    const toggle = () => btn('Ẩn số liệu') ?? btn('Hiện số liệu');
+    check('toggle on overview', btn('Ẩn số liệu') && btn('Ẩn số liệu').getAttribute('aria-pressed') === 'false');
+    check('amounts visible by default', hasText('6.000.000 / 12.000.000') || hasText('6.000.000'));
+    toggle().click(); await sleep(300);
+    check('toggle switches state', btn('Hiện số liệu')?.getAttribute('aria-pressed') === 'true');
+    check('amounts masked on overview', hasText('******') && !hasText('6.000.000') && !hasText('12.000.000'));
+    check('percentages still shown', hasText('55%', $('[data-hero]')) && hasText('50%'));
+    check('choice remembered', localStorage.getItem('goalvault.hideAmounts') === '1');
+    await openGoal('Quỹ khẩn cấp');
+    check('detail value masked', $('.modal-panel [data-current]').textContent === '******');
+    check('detail target and stats masked', ['30.000.000', '60.000.000', '10.000.000', '+5.000.000'].every((v) => !hasText(v, panel())), panel().textContent);
+    check('chart axis masked', window.Chart.getChart($('canvas', panel())).options.scales.y.ticks.callback(1000) === '******');
+    check('detail % kept', hasText('50%', panel()));
+    await esc();
+    await go('#/category/c1');
+    check('category page masked', hasText('******') && !hasText('30.000.000'));
+    await go('#/archive');
+    check('archive masked', hasText('******') && !hasText('5.000.000'));
+    await go('#/');
+    toggle().click(); await sleep(300);
+    check('toggle back shows amounts', hasText('6.000.000') && !hasText('******') && localStorage.getItem('goalvault.hideAmounts') === '0');
+  `],
   ['theme toggle', DEMO, 1280, `
     const html = document.documentElement;
     const themeBtn = () => btn('Giao diện: Theo hệ thống') ?? btn('Giao diện: Sáng') ?? btn('Giao diện: Tối');

@@ -1,8 +1,9 @@
 // Goal detail sheet: progress, stats, history chart, transactions, edit/archive/delete.
-import { formatDate, formatNumber, formatShortDate, formatPct, itemStatus, todayStr } from '../domain.js';
+import { formatDate, formatShortDate, formatPct, itemStatus, todayStr } from '../domain.js';
 import { valueSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
+import { displayNumber } from '../privacy.js';
 import { lineChart } from './charts.js';
 import { confirmDialog, h, icon, iconButton, modalHeader, openModal, safely, showError } from './dom.js';
 import { openEntryForm, openItemForm, openSetCurrent } from './forms.js';
@@ -41,10 +42,10 @@ export function openItemDetail(ctx, itemId) {
   };
 
   const statsGrid = (item, st, lang) => {
-    const cells = [[t('item.remaining'), formatNumber(st.remaining, lang)]];
+    const cells = [[t('item.remaining'), displayNumber(st.remaining, lang)]];
     if (item.deadline) {
       cells.push([t('item.deadline'), `${formatDate(item.deadline, lang)} · ${deadlineText(st)}`]);
-      if (st.perMonth != null) cells.push([t('item.perMonth'), formatNumber(Math.ceil(st.perMonth * 100) / 100, lang)]);
+      if (st.perMonth != null) cells.push([t('item.perMonth'), displayNumber(Math.ceil(st.perMonth * 100) / 100, lang)]);
       cells.push([t('item.expected'), formatPct(st.expectedPct)]);
     }
     return h('div', { class: 'grid grid-cols-2 gap-2' }, cells.map(([label, value]) => h('div', { class: 'rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3' },
@@ -60,7 +61,7 @@ export function openItemDetail(ctx, itemId) {
         h('p', { class: 'text-sm font-medium' }, `${formatDate(e.date, lang)} · ${t(`entry.${e.type}`)}`),
         e.note ? h('p', { class: 'text-xs text-slate-500 dark:text-slate-400 truncate' }, e.note) : null),
       h('span', { class: `font-semibold tabular-nums ${e.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}` },
-        `${e.amount > 0 ? '+' : ''}${formatNumber(e.amount, lang)}`),
+        displayNumber(e.amount, lang, { signed: true })),
       iconButton('pencil', () => openEntryForm(ctx, item, e), t('common.edit')),
       iconButton('trash-2', () => removeEntry(item, e), t('common.delete')))));
   };
@@ -83,8 +84,8 @@ export function openItemDetail(ctx, itemId) {
       h('div', { class: 'flex items-center gap-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-4' },
         ring(st.pct, color, 104),
         h('div', { class: 'min-w-0 space-y-1' },
-          h('p', { class: 'text-2xl font-extrabold tabular-nums break-all', 'data-current': 'true' }, formatNumber(item.current, lang)),
-          h('p', { class: 'text-sm muted tabular-nums break-all' }, `/ ${formatNumber(item.target, lang)}`),
+          h('p', { class: 'text-2xl font-extrabold tabular-nums break-all', 'data-current': 'true' }, displayNumber(item.current, lang)),
+          h('p', { class: 'text-sm muted tabular-nums break-all' }, `/ ${displayNumber(item.target, lang)}`),
           statusBadge(st))),
       item.deadline && !st.achieved
         ? h('div', { class: 'space-y-1.5' }, bulletBar(st.pct, st.expectedPct, color), h('p', { class: 'text-xs muted' }, t('item.expectedMarker')))

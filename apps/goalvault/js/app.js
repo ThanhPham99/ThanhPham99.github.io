@@ -1,5 +1,6 @@
 // Bootstrap: picks demo or Firebase, wires auth → store → render loop, routing, language and theme.
 import { getLang, onLangChange, setLang } from './i18n.js';
+import { onPrivacyChange } from './privacy.js';
 import { parseRoute } from './route.js';
 import { createMemoryStore } from './store-memory.js';
 import { seedDemo } from './demo-seed.js';
@@ -139,5 +140,7 @@ onLangChange(() => {
   if (ctx.state) renderApp();
   else if (!ctx.store) showLogin(loginOptions);
 });
+
+onPrivacyChange(() => renderApp());
 
 boot().catch(showError);

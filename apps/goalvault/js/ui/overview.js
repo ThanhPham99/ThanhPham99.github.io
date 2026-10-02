@@ -4,6 +4,7 @@ import { createEntryCache } from '../entry-cache.js';
 import { averageSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
+import { isHidden, setHidden } from '../privacy.js';
 import { lineChart } from './charts.js';
 import { groupCard } from './categories.js';
 import { catIcon, emptyState, h, icon, showError } from './dom.js';
@@ -26,9 +27,15 @@ const heroChip = (iconName, text) => h('span', { class: 'inline-flex items-cente
   icon(iconName, 'w-4 h-4'), text);
 
 function hero(kpi, attention, dueSoon) {
-  return h('section', { class: 'hero rounded-3xl p-5 sm:p-7 text-white flex items-center gap-5 sm:gap-8 shadow-lg shadow-brand-900/10', 'data-hero': 'true' },
+  const hidden = isHidden();
+  return h('section', { class: 'hero relative rounded-3xl p-5 sm:p-7 text-white flex items-center gap-5 sm:gap-8 shadow-lg shadow-brand-900/10', 'data-hero': 'true' },
+    h('button', {
+      type: 'button', class: 'absolute top-2 right-2 inline-flex items-center justify-center w-11 h-11 rounded-xl text-white/90 hover:bg-white/15 transition-colors',
+      'aria-pressed': String(hidden), 'aria-label': t(hidden ? 'privacy.show' : 'privacy.hide'), title: t(hidden ? 'privacy.show' : 'privacy.hide'),
+      onclick: () => setHidden(!hidden),
+    }, icon(hidden ? 'eye-off' : 'eye', 'w-5 h-5')),
     ring(kpi.avg ?? 0, '#ffffff', 112, { track: 'rgba(255,255,255,0.22)', label: formatPct(kpi.avg) }),
-    h('div', { class: 'min-w-0 space-y-3' },
+    h('div', { class: 'min-w-0 space-y-3 pr-8' },
       h('div', { class: 'space-y-1' },
         h('p', { class: 'text-sm font-medium text-white/90' }, t('kpi.avg')),
         h('p', { class: 'text-xl sm:text-2xl font-extrabold leading-tight', 'data-achieved': 'true' }, t('overview.achievedOf', { a: kpi.achieved, n: kpi.total }))),

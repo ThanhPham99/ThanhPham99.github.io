@@ -1,5 +1,6 @@
 // Thin Chart.js wrapper for value / progress lines that follows the current theme.
-import { formatNumber, formatPct } from '../domain.js';
+import { formatPct } from '../domain.js';
+import { displayNumber } from '../privacy.js';
 import { getLang } from '../i18n.js';
 
 export function lineChart(canvas, points, { color, target = null, percent = false }) {
@@ -7,7 +8,7 @@ export function lineChart(canvas, points, { color, target = null, percent = fals
   const grid = dark ? 'rgba(148,163,184,0.12)' : 'rgba(100,116,139,0.12)';
   const tick = dark ? '#94a3b8' : '#64748b';
   const lang = getLang();
-  const fmt = (v) => (percent ? formatPct(v) : formatNumber(v, lang));
+  const fmt = (v) => (percent ? formatPct(v) : displayNumber(v, lang));
   const fill = (ctx) => {
     const { chartArea, ctx: c } = ctx.chart;
     if (!chartArea) return `${color}22`;

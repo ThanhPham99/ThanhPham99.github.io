@@ -1,5 +1,6 @@
 // Archived goals: excluded from overview/categories, restorable or permanently deletable.
-import { formatNumber, progress } from '../domain.js';
+import { progress } from '../domain.js';
+import { displayNumber } from '../privacy.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { confirmDialog, emptyState, h, iconButton, safely } from './dom.js';
@@ -24,7 +25,7 @@ export function renderArchive(ctx) {
           h('button', { type: 'button', class: 'flex-1 min-w-0 text-left', onclick: () => openItemDetail(ctx, item.id) },
             h('p', { class: 'font-semibold truncate' }, item.name),
             h('p', { class: 'text-xs text-slate-500 dark:text-slate-400 truncate tabular-nums' },
-              `${cat?.name ?? ''} · ${formatNumber(item.current, lang)} / ${formatNumber(item.target, lang)}`)),
+              `${cat?.name ?? ''} · ${displayNumber(item.current, lang)} / ${displayNumber(item.target, lang)}`)),
           iconButton('archive-restore', () => safely(() => ctx.store.setArchived(item.id, false)), t('common.restore')),
           iconButton('trash-2', () => remove(ctx, item), t('common.delete')));
       }))

@@ -1,5 +1,6 @@
 // Compact goal card used in category detail and the overview.
-import { formatNumber, itemStatus, todayStr } from '../domain.js';
+import { itemStatus, todayStr } from '../domain.js';
+import { displayNumber } from '../privacy.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { h } from './dom.js';
@@ -13,7 +14,7 @@ export function itemCard(ctx, item, { showCategory = false } = {}) {
   const lang = getLang();
   const meta = [
     showCategory ? cat?.name : null,
-    st.achieved ? null : `${t('item.remaining')} ${formatNumber(st.remaining, lang)}`,
+    st.achieved ? null : `${t('item.remaining')} ${displayNumber(st.remaining, lang)}`,
     deadlineText(st) || null,
   ].filter(Boolean).join(' · ');
   return h('button', {
@@ -27,8 +28,8 @@ export function itemCard(ctx, item, { showCategory = false } = {}) {
       h('p', { class: 'font-semibold leading-snug line-clamp-2 break-words' }, item.name),
       statusBadge(st)),
     h('p', { class: 'text-sm tabular-nums truncate' },
-      h('span', { class: 'font-semibold' }, formatNumber(item.current, lang)),
-      h('span', { class: 'muted' }, ` / ${formatNumber(item.target, lang)}`)),
+      h('span', { class: 'font-semibold' }, displayNumber(item.current, lang)),
+      h('span', { class: 'muted' }, ` / ${displayNumber(item.target, lang)}`)),
     item.deadline && !st.achieved ? bulletBar(st.pct, st.expectedPct, color) : null,
     meta ? h('p', { class: 'text-xs muted truncate' }, meta) : null));
 }
