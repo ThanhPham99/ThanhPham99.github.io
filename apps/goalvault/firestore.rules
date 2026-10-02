@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function optionalString(data, key) {
+      return !(key in data) || data[key] == null || data[key] is string;
+    }
+    function validCategory(d) {
+      return d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && d.color is string && d.icon is string && d.order is number;
+    }
+    function validItem(d) {
+      return d.categoryId is string
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 120
+        && d.target is number && d.target > 0
+        && d.current is number && d.current >= 0
+        && d.archived is bool
+        && optionalString(d, 'tag') && optionalString(d, 'deadline') && optionalString(d, 'note');
+    }
+    function validEntry(d) {
+      return d.amount is number && d.amount != 0
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.type in ['deposit', 'withdraw', 'adjust']
+        && optionalString(d, 'note');
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /categories/{categoryId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validCategory(request.resource.data);
+      }
+
+      match /items/{itemId} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validItem(request.resource.data);
+
+        match /entries/{entryId} {
+          allow read, delete: if isOwner(uid);
+          allow create, update: if isOwner(uid) && validEntry(request.resource.data);
+        }
+      }
+    }
+  }
+}
