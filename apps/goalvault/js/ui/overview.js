@@ -1,18 +1,19 @@
 // Overview: KPIs, per-category progress, average-progress trend, due-soon / attention lists, filterable goal grid.
-import { averageProgress, formatDate, formatPct, itemStatus, overviewKpis, progress, tagsOf, todayStr } from '../domain.js';
+import { averageProgress, formatDate, formatPct, groupCategoryItems, itemStatus, overviewKpis, todayStr } from '../domain.js';
 import { createEntryCache } from '../entry-cache.js';
 import { averageSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { routeHref } from '../route.js';
 import { lineChart } from './charts.js';
+import { groupCard } from './categories.js';
 import { catIcon, emptyState, h, icon, showError } from './dom.js';
 import { openCategoryForm } from './forms.js';
 import { itemCard } from './item-card.js';
 import { openItemDetail } from './item-detail.js';
 import { bar, deadlineText, statusBadge } from './progress.js';
 
-const filters = { categoryId: '', tag: '' };
+const collapsedCategories = new Set();
 // Entries are read per item and cached by the item's updatedAt/current, so a change re-reads only that item.
 const trend = { key: null, points: null, chart: null, canvas: null, box: null };
 let entryCache = null;
@@ -50,31 +51,36 @@ function compactList(ctx, rows) {
   }));
 }
 
-function filterBar(ctx, categories, active) {
-  if (filters.categoryId && !categories.some((c) => c.id === filters.categoryId)) filters.categoryId = '';
-  const tags = filters.categoryId ? tagsOf(active.filter((i) => i.categoryId === filters.categoryId)) : [];
-  if (filters.tag && !tags.includes(filters.tag)) filters.tag = '';
-  const select = (value, options, onchange, disabled = false) => h('select', { class: 'input', disabled, onchange },
-    options.map(([v, label]) => h('option', { value: v, selected: v === value }, label)));
-  return h('div', { class: 'grid grid-cols-2 gap-3' },
-    select(filters.categoryId, [['', t('overview.allCategories')], ...categories.map((c) => [c.id, c.name])], (e) => {
-      filters.categoryId = e.target.value;
-      filters.tag = '';
-      ctx.render();
-    }),
-    select(filters.tag, [['', t('overview.allTags')], ...tags.map((tag) => [tag, tag])], (e) => {
-      filters.tag = e.target.value;
-      ctx.render();
-    }, !filters.categoryId));
-}
-
-function goalsGrid(ctx, active) {
-  const shown = active
-    .filter((i) => !filters.categoryId || i.categoryId === filters.categoryId)
-    .filter((i) => !filters.tag || i.tag === filters.tag)
-    .sort((a, b) => Math.min(progress(a), 1) - Math.min(progress(b), 1));
-  if (!shown.length) return h('div', { class: 'card text-sm text-slate-500 dark:text-slate-400' }, t('overview.noMatch'));
-  return h('div', { class: 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3' }, shown.map((item) => itemCard(ctx, item, { showCategory: true })));
+// One collapsible section per category; inside, goals sharing a tag form a group (as on the category page).
+function categorySection(ctx, cat, active) {
+  const items = active.filter((i) => i.categoryId === cat.id);
+  const rows = groupCategoryItems(items);
+  const open = !collapsedCategories.has(cat.id);
+  const avg = averageProgress(items);
+  const toggle = () => {
+    if (open) collapsedCategories.add(cat.id);
+    else collapsedCategories.delete(cat.id);
+    ctx.render();
+  };
+  return h('div', { class: 'card p-0' },
+    h('button', {
+      type: 'button', 'aria-expanded': String(open), onclick: toggle,
+      class: `w-full flex items-center gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 ${open ? 'rounded-t-2xl' : 'rounded-2xl'}`,
+    },
+    icon(open ? 'chevron-down' : 'chevron-right', 'w-4 h-4 shrink-0 text-slate-400'),
+    catIcon(cat),
+    h('div', { class: 'flex-1 min-w-0 space-y-1.5' },
+      h('div', { class: 'flex items-center justify-between gap-2' },
+        h('p', { class: 'font-semibold truncate' }, cat.name),
+        h('span', { class: 'text-sm font-semibold tabular-nums' }, formatPct(avg))),
+      bar(avg, colorHex(cat.color)),
+      h('p', { class: 'text-xs text-slate-500 dark:text-slate-400' }, t('category.count', { n: items.length })))),
+    open
+      ? h('div', { class: 'border-t border-slate-100 dark:border-slate-800 p-4' },
+        rows.length
+          ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
+          : h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, t('item.empty')))
+      : null);
 }
 
 async function drawTrend(ctx, active, today) {
@@ -133,7 +139,7 @@ export function renderOverview(ctx) {
     h('div', { class: 'grid gap-6 lg:grid-cols-2' },
       section(t('overview.dueSoon'), compactList(ctx, rows.filter((r) => r.st.dueSoon).sort(byDeadline))),
       section(t('overview.attention'), compactList(ctx, rows.filter((r) => r.st.behind || r.st.overdue).sort(byDeadline)))),
-    section(t('overview.allGoals'), h('div', { class: 'space-y-3' }, filterBar(ctx, categories, active), goalsGrid(ctx, active))));
+    section(t('overview.allGoals'), h('div', { class: 'space-y-3' }, categories.map((c) => categorySection(ctx, c, active)))));
 
   queueMicrotask(() => drawTrend(ctx, active, today));
   return node;

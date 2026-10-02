@@ -30,7 +30,8 @@ export function numberField(label, values, key, { error } = {}) {
   return h('label', { class: 'block space-y-1.5' },
     h('span', { class: 'label' }, label),
     input,
-    error ? h('span', { class: 'block text-xs text-rose-500' }, error) : preview);
+    error ? h('span', { class: 'block text-xs text-rose-500' }, error) : null,
+    preview);
 }
 
 const footer = (api) => h('div', { class: 'flex justify-end gap-2 pt-2' },

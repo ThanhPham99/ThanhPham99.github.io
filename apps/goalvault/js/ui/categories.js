@@ -59,7 +59,7 @@ async function renameTag(ctx, cat, tag) {
   await safely(() => ctx.store.renameTag(cat.id, tag, next));
 }
 
-function groupCard(ctx, cat, row) {
+export function groupCard(ctx, cat, row) {
   const key = `${cat.id}:${row.tag}`;
   const open = !collapsed.has(key);
   const toggle = () => {
