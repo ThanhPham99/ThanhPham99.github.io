@@ -10,28 +10,45 @@ const svg = (tag, attrs) => {
   return el;
 };
 
-export function ring(pct, color, size = 56) {
-  const stroke = size >= 80 ? 8 : 6;
+// Achieved goals switch to the success colour so "done" reads at a glance, not only via the label.
+const DONE = '#10b981';
+
+export function ring(pct, color, size = 56, { track = null, label = formatPct(pct) } = {}) {
+  const stroke = size >= 100 ? 10 : size >= 80 ? 8 : 6;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const shown = Math.min(Math.max(pct ?? 0, 0), 1);
-  const root = svg('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}`, class: '-rotate-90' });
+  const root = svg('svg', { width: size, height: size, viewBox: `0 0 ${size} ${size}`, class: '-rotate-90', 'aria-hidden': 'true' });
   root.append(
-    svg('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', 'stroke-width': stroke, class: 'stroke-slate-200 dark:stroke-slate-700' }),
+    svg('circle', track
+      ? { cx: size / 2, cy: size / 2, r, fill: 'none', 'stroke-width': stroke, stroke: track }
+      : { cx: size / 2, cy: size / 2, r, fill: 'none', 'stroke-width': stroke, class: 'stroke-slate-200 dark:stroke-slate-700/70' }),
     svg('circle', {
-      cx: size / 2, cy: size / 2, r, fill: 'none', 'stroke-width': stroke, stroke: color, 'stroke-linecap': 'round',
-      'stroke-dasharray': c, 'stroke-dashoffset': c * (1 - shown), class: 'transition-all duration-700',
+      cx: size / 2, cy: size / 2, r, fill: 'none', 'stroke-width': stroke, stroke: track ? color : (shown >= 1 ? DONE : color),
+      'stroke-linecap': 'round', 'stroke-dasharray': c, 'stroke-dashoffset': c * (1 - shown), class: 'progress-anim',
     }),
   );
-  return h('div', { class: 'relative shrink-0', style: { width: `${size}px`, height: `${size}px` } },
+  const text = size >= 100 ? 'text-2xl' : size >= 80 ? 'text-lg' : 'text-xs';
+  return h('div', { class: 'relative shrink-0', style: { width: `${size}px`, height: `${size}px` }, role: 'img', 'aria-label': label },
     root,
-    h('span', { class: `absolute inset-0 flex items-center justify-center font-bold tabular-nums ${size >= 80 ? 'text-lg' : 'text-xs'}` }, formatPct(pct)));
+    h('span', { class: `absolute inset-0 flex items-center justify-center font-bold tabular-nums ${text}`, 'aria-hidden': 'true' }, label));
 }
 
-export function bar(pct, color) {
+export function bar(pct, color, { size = 'sm' } = {}) {
   const width = Math.min(Math.max(pct ?? 0, 0), 1) * 100;
-  return h('div', { class: 'h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden' },
-    h('div', { class: 'h-full rounded-full transition-all duration-700', style: { width: `${width}%`, background: color } }));
+  return h('div', { class: `${size === 'lg' ? 'h-3' : 'h-2'} w-full rounded-full bg-slate-200/80 dark:bg-slate-700/60 overflow-hidden`, 'aria-hidden': 'true' },
+    h('div', { class: 'h-full rounded-full progress-anim', style: { width: `${width}%`, background: width >= 100 ? DONE : color } }));
+}
+
+// Bullet bar: actual progress plus a marker where the goal should be today (linear plan to the deadline).
+export function bulletBar(pct, expected, color) {
+  const clamp = (v) => Math.min(Math.max(v ?? 0, 0), 1) * 100;
+  return h('div', { class: 'relative pt-1', 'aria-hidden': 'true' },
+    bar(pct, color, { size: 'lg' }),
+    expected == null ? null : h('div', {
+      class: 'absolute top-0 bottom-[-4px] w-0.5 rounded-full bg-slate-900 dark:bg-white',
+      style: { left: `calc(${clamp(expected)}% - 1px)` },
+    }));
 }
 
 const BADGE = {

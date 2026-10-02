@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  applyDelta, averageProgress, formatDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
+  applyDelta, averageProgress, formatDate, formatShortDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
   normalizeTag, overviewKpis, parseNumber, progress, tagsOf, todayStr, validateItemInput,
 } from '../js/domain.js';
 
@@ -65,6 +65,8 @@ test('formatPct never shows 100% for an unfinished goal', () => {
 test('dates use the local calendar day', () => {
   assert.equal(todayStr(new Date(2026, 0, 5, 23, 30)), '2026-01-05');
   assert.equal(formatDate('2026-01-05', 'vi'), '05/01/2026');
+  assert.equal(formatShortDate('2026-01-05', 'vi'), '05/01');
+  assert.equal(formatShortDate('2026-01-05', 'en'), '01/05');
 });
 
 test('averageProgress caps each item at 100% and returns null when empty', () => {

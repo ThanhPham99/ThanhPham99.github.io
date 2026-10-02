@@ -67,14 +67,15 @@ export function groupCard(ctx, cat, row) {
     else collapsed.delete(key);
     ctx.render();
   };
-  return h('div', { class: 'card md:col-span-2 space-y-3 bg-slate-50/60 dark:bg-slate-900/60' },
+  return h('div', { class: 'tag-group', 'data-tag-group': row.tag },
     h('div', { class: 'flex items-center gap-2' },
-      h('button', { type: 'button', class: 'flex-1 min-w-0 flex items-center gap-2 text-left', onclick: toggle },
-        icon(open ? 'chevron-down' : 'chevron-right', 'w-4 h-4 text-slate-400'),
-        icon('tag', 'w-4 h-4 text-slate-400'),
-        h('span', { class: 'font-semibold truncate' }, row.tag),
-        h('span', { class: 'chip bg-slate-200/70 text-slate-600 dark:bg-slate-800 dark:text-slate-300' }, String(row.items.length))),
-      h('span', { class: 'text-sm font-semibold tabular-nums' }, formatPct(row.avg)),
+      h('button', { type: 'button', class: 'flex-1 min-w-0 flex items-center gap-2 text-left min-h-11 rounded-xl', 'aria-expanded': String(open), onclick: toggle },
+        icon(open ? 'chevron-down' : 'chevron-right', 'w-4 h-4 shrink-0 muted'),
+        h('span', { class: 'inline-flex items-center gap-1.5 min-w-0 rounded-lg px-2 py-1 text-sm font-semibold', style: { background: `${colorHex(cat.color)}1f`, color: colorHex(cat.color) } },
+          icon('tag', 'w-3.5 h-3.5 shrink-0'),
+          h('span', { class: 'truncate tag-name' }, row.tag)),
+        h('span', { class: 'chip bg-white text-slate-600 dark:bg-slate-900 dark:text-slate-300 tag-count' }, String(row.items.length))),
+      h('span', { class: 'text-sm font-bold tabular-nums' }, formatPct(row.avg)),
       iconButton('pencil', () => renameTag(ctx, cat, row.tag), t('tag.rename'))),
     bar(row.avg, colorHex(cat.color)),
     open ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, row.items.map((item) => itemCard(ctx, item))) : null);

@@ -1,12 +1,12 @@
 // Goal detail sheet: progress, stats, history chart, transactions, edit/archive/delete.
-import { formatDate, formatNumber, formatPct, itemStatus, todayStr } from '../domain.js';
+import { formatDate, formatNumber, formatShortDate, formatPct, itemStatus, todayStr } from '../domain.js';
 import { valueSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { lineChart } from './charts.js';
 import { confirmDialog, h, icon, iconButton, modalHeader, openModal, safely, showError } from './dom.js';
 import { openEntryForm, openItemForm, openSetCurrent } from './forms.js';
-import { deadlineText, ring, statusBadge } from './progress.js';
+import { bulletBar, deadlineText, ring, statusBadge } from './progress.js';
 
 export function openItemDetail(ctx, itemId) {
   let entries = [];
@@ -80,12 +80,15 @@ export function openItemDetail(ctx, itemId) {
     const canvas = h('canvas');
     modal.setContent(h('div', { class: 'space-y-5' },
       modalHeader(item.name, modal, [cat?.name, item.tag].filter(Boolean).join(' · ')),
-      h('div', { class: 'flex items-center gap-4' },
-        ring(st.pct, color, 96),
+      h('div', { class: 'flex items-center gap-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-4' },
+        ring(st.pct, color, 104),
         h('div', { class: 'min-w-0 space-y-1' },
-          h('p', { class: 'text-2xl font-extrabold tabular-nums break-all' }, formatNumber(item.current, lang)),
-          h('p', { class: 'text-sm text-slate-500 dark:text-slate-400 tabular-nums break-all' }, `/ ${formatNumber(item.target, lang)}`),
+          h('p', { class: 'text-2xl font-extrabold tabular-nums break-all', 'data-current': 'true' }, formatNumber(item.current, lang)),
+          h('p', { class: 'text-sm muted tabular-nums break-all' }, `/ ${formatNumber(item.target, lang)}`),
           statusBadge(st))),
+      item.deadline && !st.achieved
+        ? h('div', { class: 'space-y-1.5' }, bulletBar(st.pct, st.expectedPct, color), h('p', { class: 'text-xs muted' }, t('item.expectedMarker')))
+        : null,
       statsGrid(item, st, lang),
       item.note ? h('p', { class: 'text-sm whitespace-pre-line break-words rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3' }, item.note) : null,
       h('div', { class: 'grid grid-cols-2 gap-2' },
@@ -98,11 +101,11 @@ export function openItemDetail(ctx, itemId) {
           : h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => setArchived(item, true) }, icon('archive', 'w-4 h-4'), t('item.archive')),
         h('button', { type: 'button', class: 'btn btn-ghost btn-sm text-rose-600 dark:text-rose-400', onclick: () => remove(item) }, icon('trash-2', 'w-4 h-4'), t('common.delete'))),
       h('div', { class: 'space-y-3' },
-        h('h3', { class: 'font-semibold' }, t('item.history')),
+        h('h3', { class: 'section-title' }, t('item.history')),
         entries.length ? h('div', { class: 'h-44' }, canvas) : null,
         entryList(item, lang))));
     if (entries.length) {
-      chart = lineChart(canvas, valueSeries(entries).map((p) => ({ label: formatDate(p.date, lang), value: p.value })), { color, target: item.target });
+      chart = lineChart(canvas, valueSeries(entries).map((p) => ({ label: formatShortDate(p.date, lang), title: formatDate(p.date, lang), value: p.value })), { color, target: item.target });
     }
     if (wasAchieved === false && st.achieved && !item.archived) promptArchive(item);
     wasAchieved = st.achieved;

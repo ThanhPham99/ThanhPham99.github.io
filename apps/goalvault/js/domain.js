@@ -80,6 +80,12 @@ export function formatDate(dateStr, lang = 'vi') {
     .format(new Date(y, m - 1, d));
 }
 
+// Compact axis label (day/month in the locale's order).
+export function formatShortDate(dateStr, lang = 'vi') {
+  const [, m, d] = dateStr.split('-');
+  return lang === 'en' ? `${m}/${d}` : `${d}/${m}`;
+}
+
 export function progress(item) {
   return item.target > 0 ? roundNum(item.current / item.target) : 0;
 }

@@ -102,26 +102,25 @@ const SCENARIOS = [
   `],
   ['overview numbers and lists', DEMO, 1280, `
     await sleep(800);
-    const kpis = $$('#app .grid-cols-3 .card').map((c) => c.textContent);
-    check('KPI average', kpis[0]?.startsWith('55%'), kpis);
-    check('KPI achieved 2/10', kpis[1]?.startsWith('2/10'), kpis);
-    check('KPI attention 3', kpis[2]?.startsWith('3'), kpis);
-    const section = (t) => $$('#app section').find((s) => $('h2', s)?.textContent === t);
-    const names = (t) => $$('button p.font-medium', section(t)).map((p) => p.textContent);
-    check('due soon list', JSON.stringify(names('Sắp tới hạn')) === JSON.stringify(['Bảo hiểm sức khỏe', 'Đà Lạt']), names('Sắp tới hạn'));
-    check('attention list', names('Chậm tiến độ / trễ hạn').join() === 'Nhật Bản,Bảo hiểm sức khỏe,Đà Lạt', names('Chậm tiến độ / trễ hạn'));
+    const heroEl = $('[data-hero]');
+    check('hero average', hasText('55%', heroEl), heroEl?.textContent);
+    check('hero achieved count', hasText('2/10 mục tiêu đã đạt', heroEl), heroEl?.textContent);
+    check('hero chips', hasText('3 cần chú ý', heroEl) && hasText('2 sắp tới hạn', heroEl), heroEl?.textContent);
+    const section = (t) => $$('#app [data-section]').find((s) => s.dataset.section === t);
+    const att = $$('.attention-name', section('Cần chú ý')).map((p) => p.textContent);
+    check('attention list merged and ordered by urgency', att.join() === 'Nhật Bản,Bảo hiểm sức khỏe,Đà Lạt', att);
     check('overdue badge', hasText('Trễ hạn') && hasText('Trễ 5 ngày'));
     check('trend chart drawn', window.Chart?.getChart($('#app canvas')));
     check('archived goal excluded', !hasText('Hà Giang'));
     const goals = () => section('Tất cả mục tiêu');
-    const headers = () => $$('button[aria-expanded]', goals());
+    const headers = () => $$('[data-category-section] > button', goals());
     const goalNames = () => $$('.card.w-full p.font-semibold', goals()).map((p) => p.textContent);
     check('one collapsible section per category', headers().map((b) => $('p', b).textContent).join() === 'Tiết kiệm,Du lịch,Đầu tư', headers().map((b) => b.textContent));
     check('sections expanded by default', headers().every((b) => b.getAttribute('aria-expanded') === 'true'));
     check('all 10 active goals listed', goalNames().length === 10, goalNames());
     check('section header shows count and average', hasText('4 mục tiêu', headers()[0]) && hasText('%', headers()[0]));
     const firstSection = headers()[0].parentElement;
-    const tagGroup = $$('.card', firstSection).find((c) => $('button span.font-semibold', c)?.textContent === 'An toàn');
+    const tagGroup = $$('[data-tag-group]', firstSection).find((g) => g.dataset.tagGroup === 'An toàn');
     check('goals grouped by tag inside category', tagGroup && $$('.card.w-full', tagGroup).length === 2);
     check('untagged goal standalone inside category', hasText('Mua laptop', firstSection) && !hasText('Mua laptop', tagGroup));
     headers()[0].click(); await sleep(300);
@@ -129,8 +128,9 @@ const SCENARIOS = [
     headers()[0].click(); await sleep(300);
     check('expand shows them again', goalNames().includes('Quỹ khẩn cấp'));
     check('chart survives re-render', window.Chart?.getChart($('#app canvas')));
-    $$('#app a[href^="#/category/"]')[0].click(); await sleep(300);
-    check('category bar links to category', location.hash === '#/category/c1');
+    $$('button', section('Cần chú ý'))[0].click(); await sleep(400);
+    check('attention row opens goal', hasText('Nhật Bản', panel()));
+    check('bullet bar with expectation marker', hasText('mức cần đạt hôm nay', panel()));
   `],
   ['category CRUD and validation', DEMO, 1280, `
     await go('#/categories');
@@ -211,14 +211,14 @@ const SCENARIOS = [
   `],
   ['tag groups, rename, collapse, untag', DEMO, 1280, `
     await go('#/category/c1');
-    const group = (tag) => $$('#app .card').find((c) => $('button span.font-semibold', c)?.textContent === tag);
-    check('group "An toàn" has 2 goals', group('An toàn') && $('.chip', group('An toàn')).textContent === '2');
+    const group = (tag) => $$('#app [data-tag-group]').find((g) => g.dataset.tagGroup === tag);
+    check('group "An toàn" has 2 goals', group('An toàn') && $('.tag-count', group('An toàn')).textContent === '2');
     check('group shows average', hasText('50%', group('An toàn')), group('An toàn')?.textContent);
     check('untagged goals standalone', !group('Mua laptop') && hasText('Mua laptop'));
     await click('Thêm mục tiêu'); fill({ 0: 'Quỹ con', 1: '10', 3: '  an  toàn ' }); await click('Lưu', panel());
     check('different case makes its own group', group('an toàn'));
     await click('Đổi tên tag', group('an toàn')); fill({ 0: 'An toàn' }); await click('Lưu', panel());
-    check('rename merges into existing group', !group('an toàn') && $('.chip', group('An toàn')).textContent === '3');
+    check('rename merges into existing group', !group('an toàn') && $('.tag-count', group('An toàn')).textContent === '3');
     $('button', group('An toàn')).click(); await sleep(200);
     check('collapse hides goals', !hasText('Quỹ khẩn cấp'));
     $('button', group('An toàn')).click(); await sleep(200);
@@ -229,7 +229,7 @@ const SCENARIOS = [
   ['goal detail: entries, limits, archive prompt', DEMO, 1280, `
     await go('#/category/c1');
     await openGoal('Quỹ khẩn cấp');
-    const value = () => $('.modal-panel .text-2xl').textContent;
+    const value = () => $('.modal-panel [data-current]').textContent;
     const stats = $$('.text-xs', panel()).map((e) => e.textContent);
     check('stats shown', ['Còn thiếu', 'Hạn chót', 'Cần góp mỗi tháng', 'Tiến độ kỳ vọng'].every((s) => stats.includes(s)), stats);
     check('history chart drawn', window.Chart?.getChart($('canvas', panel())));
@@ -294,7 +294,7 @@ const SCENARIOS = [
     check('overview welcome', hasText('Bắt đầu bằng việc tạo danh mục đầu tiên.'));
     await click('Danh mục mới'); fill({ 0: 'Mới' }); await click('Lưu', panel());
     check('overview after first category', hasText('Tiến độ trung bình') && hasText('—'));
-    await go('#/category/' + $$('#app a[href^="#/category/"]')[0]?.getAttribute('href').split('/').pop());
+    await go('#/categories'); $$('#app a[href^="#/category/"]')[0].click(); await sleep(300);
     check('empty category message', hasText('Danh mục này chưa có mục tiêu.'));
   `],
   ['English UI and number formats', DEMO, 1280, `

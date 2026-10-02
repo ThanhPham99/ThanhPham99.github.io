@@ -1,17 +1,16 @@
-// Overview: KPIs, per-category progress, average-progress trend, due-soon / attention lists, filterable goal grid.
-import { averageProgress, formatDate, formatPct, groupCategoryItems, itemStatus, overviewKpis, todayStr } from '../domain.js';
+// Overview: hero summary, attention list, average-progress trend, collapsible per-category goal sections.
+import { averageProgress, formatDate, formatShortDate, formatPct, groupCategoryItems, itemStatus, overviewKpis, todayStr } from '../domain.js';
 import { createEntryCache } from '../entry-cache.js';
 import { averageSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
-import { routeHref } from '../route.js';
 import { lineChart } from './charts.js';
 import { groupCard } from './categories.js';
 import { catIcon, emptyState, h, icon, showError } from './dom.js';
 import { openCategoryForm } from './forms.js';
 import { itemCard } from './item-card.js';
 import { openItemDetail } from './item-detail.js';
-import { bar, deadlineText, statusBadge } from './progress.js';
+import { bar, deadlineText, ring, statusBadge } from './progress.js';
 
 const collapsedCategories = new Set();
 // Entries are read per item and cached by the item's updatedAt/current, so a change re-reads only that item.
@@ -19,35 +18,43 @@ const trend = { key: null, points: null, chart: null, canvas: null, box: null };
 let entryCache = null;
 let cacheStore = null;
 
-const section = (title, body) => h('section', { class: 'space-y-3' }, h('h2', { class: 'font-bold' }, title), body);
+const section = (title, body, extra = null) => h('section', { class: 'space-y-3 min-w-0', 'data-section': title },
+  h('div', { class: 'flex items-baseline justify-between gap-3' }, h('h2', { class: 'section-title' }, title), extra),
+  body);
 
-function kpiCard(iconName, value, label, tone = 'text-brand-600 dark:text-brand-400') {
-  return h('div', { class: 'card p-3 sm:p-4 space-y-1' },
-    h('span', { class: tone }, icon(iconName, 'w-5 h-5')),
-    h('p', { class: 'text-xl sm:text-2xl font-extrabold tabular-nums' }, value),
-    h('p', { class: 'text-xs text-slate-500 dark:text-slate-400 leading-tight' }, label));
+const heroChip = (iconName, text) => h('span', { class: 'inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium text-white' },
+  icon(iconName, 'w-4 h-4'), text);
+
+function hero(kpi, attention, dueSoon) {
+  return h('section', { class: 'hero rounded-3xl p-5 sm:p-7 text-white flex items-center gap-5 sm:gap-8 shadow-lg shadow-brand-900/10', 'data-hero': 'true' },
+    ring(kpi.avg ?? 0, '#ffffff', 112, { track: 'rgba(255,255,255,0.22)', label: formatPct(kpi.avg) }),
+    h('div', { class: 'min-w-0 space-y-3' },
+      h('div', { class: 'space-y-1' },
+        h('p', { class: 'text-sm font-medium text-white/90' }, t('kpi.avg')),
+        h('p', { class: 'text-xl sm:text-2xl font-extrabold leading-tight', 'data-achieved': 'true' }, t('overview.achievedOf', { a: kpi.achieved, n: kpi.total }))),
+      h('div', { class: 'flex flex-wrap gap-2' },
+        attention ? heroChip('triangle-alert', t('overview.attentionCount', { n: attention })) : null,
+        dueSoon ? heroChip('clock', t('overview.dueSoonCount', { n: dueSoon })) : null,
+        !attention && !dueSoon ? heroChip('circle-check', t('overview.allOnTrack')) : null)));
 }
 
-function categoryProgress(cat, active) {
-  const avg = averageProgress(active.filter((i) => i.categoryId === cat.id));
-  return h('a', { href: routeHref('category', cat.id), class: 'block space-y-1.5 group' },
-    h('div', { class: 'flex items-center gap-2' },
-      catIcon(cat, 'sm'),
-      h('span', { class: 'flex-1 min-w-0 truncate font-medium group-hover:text-brand-600' }, cat.name),
-      h('span', { class: 'text-sm font-semibold tabular-nums' }, formatPct(avg))),
-    bar(avg, colorHex(cat.color)));
-}
+// Overdue first, then behind, then due soon; ties by nearest deadline.
+const urgency = (st) => (st.overdue ? 0 : st.behind ? 1 : 2);
 
-function compactList(ctx, rows) {
-  if (!rows.length) return h('div', { class: 'card text-sm text-slate-500 dark:text-slate-400' }, t('overview.nothing'));
-  return h('div', { class: 'card p-0 divide-y divide-slate-100 dark:divide-slate-800' }, rows.map(({ item, st }) => {
+function attentionList(ctx, rows) {
+  return h('div', { class: 'card p-1.5 space-y-0.5' }, rows.map(({ item, st }) => {
     const cat = ctx.state.categories.find((c) => c.id === item.categoryId);
-    return h('button', { type: 'button', class: 'w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 first:rounded-t-2xl last:rounded-b-2xl', onclick: () => openItemDetail(ctx, item.id) },
-      catIcon(cat, 'sm'),
-      h('div', { class: 'flex-1 min-w-0' },
-        h('p', { class: 'font-medium truncate' }, item.name),
-        h('p', { class: 'text-xs text-slate-500 dark:text-slate-400 truncate' }, `${formatPct(st.pct)} · ${deadlineText(st)}`)),
-      statusBadge(st));
+    return h('button', {
+      type: 'button', class: 'w-full flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors',
+      onclick: () => openItemDetail(ctx, item.id),
+    },
+    catIcon(cat),
+    h('div', { class: 'flex-1 min-w-0 space-y-1.5' },
+      h('div', { class: 'flex items-center justify-between gap-2' },
+        h('p', { class: 'font-semibold truncate attention-name' }, item.name),
+        statusBadge(st)),
+      bar(st.pct, colorHex(cat?.color)),
+      h('p', { class: 'text-xs muted truncate' }, `${formatPct(st.pct)} · ${deadlineText(st)}`)));
   }));
 }
 
@@ -62,21 +69,21 @@ function categorySection(ctx, cat, active) {
     else collapsedCategories.delete(cat.id);
     ctx.render();
   };
-  return h('div', { class: 'card p-0' },
+  return h('div', { class: 'card p-0 min-w-0', 'data-category-section': cat.id },
     h('button', {
       type: 'button', 'aria-expanded': String(open), onclick: toggle,
       class: `w-full flex items-center gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 ${open ? 'rounded-t-2xl' : 'rounded-2xl'}`,
     },
-    icon(open ? 'chevron-down' : 'chevron-right', 'w-4 h-4 shrink-0 text-slate-400'),
     catIcon(cat),
     h('div', { class: 'flex-1 min-w-0 space-y-1.5' },
       h('div', { class: 'flex items-center justify-between gap-2' },
         h('p', { class: 'font-semibold truncate' }, cat.name),
-        h('span', { class: 'text-sm font-semibold tabular-nums' }, formatPct(avg))),
+        h('span', { class: 'text-base font-bold tabular-nums' }, formatPct(avg))),
       bar(avg, colorHex(cat.color)),
-      h('p', { class: 'text-xs text-slate-500 dark:text-slate-400' }, t('category.count', { n: items.length })))),
+      h('p', { class: 'text-xs muted' }, t('category.count', { n: items.length }))),
+    icon(open ? 'chevron-up' : 'chevron-down', 'w-5 h-5 shrink-0 muted')),
     open
-      ? h('div', { class: 'border-t border-slate-100 dark:border-slate-800 p-4' },
+      ? h('div', { class: 'border-t border-slate-100 dark:border-slate-800 p-3 sm:p-4' },
         rows.length
           ? h('div', { class: 'grid gap-3 md:grid-cols-2' }, rows.map((row) => (row.type === 'group' ? groupCard(ctx, cat, row) : itemCard(ctx, row.item))))
           : h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, t('item.empty')))
@@ -109,7 +116,7 @@ async function drawTrend(ctx, active, today) {
     return;
   }
   const lang = getLang();
-  trend.chart = lineChart(trend.canvas, trend.points.map((p) => ({ label: formatDate(p.date, lang), value: p.avg })), { color: '#10b981', percent: true });
+  trend.chart = lineChart(trend.canvas, trend.points.map((p) => ({ label: formatShortDate(p.date, lang), title: formatDate(p.date, lang), value: p.avg })), { color: '#10b981', percent: true });
 }
 
 export function renderOverview(ctx) {
@@ -124,21 +131,17 @@ export function renderOverview(ctx) {
   const active = items.filter((i) => !i.archived);
   const kpi = overviewKpis(active, today);
   const rows = active.map((item) => ({ item, st: itemStatus(item, today) }));
-  const byDeadline = (a, b) => a.item.deadline.localeCompare(b.item.deadline);
-  trend.canvas = h('canvas');
-  trend.box = h('div', { class: 'h-48' }, trend.canvas);
+  const attention = rows
+    .filter((r) => r.st.overdue || r.st.behind || r.st.dueSoon)
+    .sort((a, b) => urgency(a.st) - urgency(b.st) || a.st.daysLeft - b.st.daysLeft);
+  trend.canvas = h('canvas', { 'aria-label': t('overview.trend') });
+  trend.box = h('div', { class: 'h-52' }, trend.canvas);
 
-  const node = h('div', { class: 'space-y-6' },
-    h('div', { class: 'grid grid-cols-3 gap-3' },
-      kpiCard('gauge', formatPct(kpi.avg), t('kpi.avg')),
-      kpiCard('circle-check', `${kpi.achieved}/${kpi.total}`, t('kpi.achieved'), 'text-emerald-500'),
-      kpiCard('triangle-alert', String(kpi.behind), t('kpi.behind'), kpi.behind ? 'text-amber-500' : 'text-slate-400')),
-    h('div', { class: 'grid gap-6 lg:grid-cols-2' },
-      section(t('overview.byCategory'), h('div', { class: 'card space-y-4' }, categories.map((c) => categoryProgress(c, active)))),
+  const node = h('div', { class: 'space-y-7' },
+    hero(kpi, rows.filter((r) => r.st.behind || r.st.overdue).length, rows.filter((r) => r.st.dueSoon).length),
+    h('div', { class: `grid gap-7 ${attention.length ? 'lg:grid-cols-2' : ''}` },
+      attention.length ? section(t('overview.attention'), attentionList(ctx, attention)) : null,
       section(t('overview.trend'), h('div', { class: 'card' }, trend.box))),
-    h('div', { class: 'grid gap-6 lg:grid-cols-2' },
-      section(t('overview.dueSoon'), compactList(ctx, rows.filter((r) => r.st.dueSoon).sort(byDeadline))),
-      section(t('overview.attention'), compactList(ctx, rows.filter((r) => r.st.behind || r.st.overdue).sort(byDeadline)))),
     section(t('overview.allGoals'), h('div', { class: 'space-y-3' }, categories.map((c) => categorySection(ctx, c, active)))));
 
   queueMicrotask(() => drawTrend(ctx, active, today));
