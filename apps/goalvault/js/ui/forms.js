@@ -182,3 +182,91 @@ export function promptText({ title, label, value = '', maxlength = 40 }) {
     });
   });
 }
+
+export function openEntryForm(ctx, item, entry = null) {
+  const lang = getLang();
+  const values = {
+    sign: entry && entry.amount < 0 ? -1 : 1,
+    amount: entry ? formatNumber(Math.abs(entry.amount), lang) : '',
+    date: entry?.date ?? todayStr(),
+    note: entry?.note ?? '',
+  };
+  let errors = {};
+  const err = (key) => (errors[key] ? t(`error.${errors[key]}`) : null);
+  const signs = [[1, 'entry.deposit', 'plus', 'text-emerald-600'], [-1, 'entry.withdraw', 'minus', 'text-rose-600']];
+
+  openModal((api) => {
+    const render = () => h('form', {
+      class: 'space-y-4', novalidate: true,
+      onsubmit: async (e) => {
+        e.preventDefault();
+        const abs = parseNumber(values.amount);
+        errors = {};
+        if (!Number.isFinite(abs) || abs <= 0) errors.amount = 'positive';
+        if (!isDateStr(values.date)) errors.date = 'invalidDate';
+        if (Object.keys(errors).length) {
+          api.setContent(render());
+          return;
+        }
+        const data = { amount: values.sign * abs, date: values.date, note: values.note.trim() };
+        try {
+          if (entry) await ctx.store.updateEntry(item.id, entry, data);
+          else await ctx.store.addEntry(item.id, data);
+          api.close();
+        } catch (error) {
+          showError(error);
+        }
+      },
+    },
+    modalHeader(t(entry ? 'entry.edit' : 'entry.add'), api, item.name),
+    h('div', { class: 'grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800' }, signs.map(([sign, key, ic, color]) => h('button', {
+      type: 'button',
+      class: `h-10 rounded-lg text-sm font-semibold inline-flex items-center justify-center gap-1.5 transition ${values.sign === sign ? `bg-white dark:bg-slate-900 shadow ${color}` : 'text-slate-500'}`,
+      onclick: () => { values.sign = sign; api.setContent(render()); },
+    }, icon(ic, 'w-4 h-4'), t(key)))),
+    numberField(t('entry.amount'), values, 'amount', { error: err('amount') }),
+    field(t('entry.date'), h('input', {
+      type: 'date', class: 'input', value: values.date,
+      onchange: (e) => { values.date = e.target.value; },
+    }), { error: err('date') }),
+    field(t('entry.note'), h('input', {
+      class: 'input', value: values.note, maxlength: 200, placeholder: t('common.optional'),
+      oninput: (e) => { values.note = e.target.value; },
+    })),
+    footer(api));
+    return render();
+  });
+}
+
+export function openSetCurrent(ctx, item) {
+  const values = { current: formatNumber(item.current, getLang()), note: '' };
+  let error = null;
+  openModal((api) => {
+    const render = () => h('form', {
+      class: 'space-y-4', novalidate: true,
+      onsubmit: async (e) => {
+        e.preventDefault();
+        const value = parseNumber(values.current);
+        if (!Number.isFinite(value) || value < 0) {
+          error = t('error.nonNegative');
+          api.setContent(render());
+          return;
+        }
+        try {
+          await ctx.store.setCurrent(item.id, value, values.note.trim());
+          api.close();
+        } catch (err) {
+          showError(err);
+        }
+      },
+    },
+    modalHeader(t('item.setCurrent'), api, item.name),
+    numberField(t('item.current'), values, 'current', { error }),
+    field(t('entry.note'), h('input', {
+      class: 'input', value: values.note, maxlength: 200, placeholder: t('common.optional'),
+      oninput: (e) => { values.note = e.target.value; },
+    })),
+    footer(api));
+    return render();
+  });
+}
