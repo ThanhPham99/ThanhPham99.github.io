@@ -10,6 +10,7 @@ export async function seedDemo(store) {
   const save = await store.addCategory({ name: 'Tiết kiệm', color: 'emerald', icon: 'piggy-bank' });
   const travel = await store.addCategory({ name: 'Du lịch', color: 'sky', icon: 'plane' });
   const invest = await store.addCategory({ name: 'Đầu tư', color: 'violet', icon: 'trending-up' });
+  const done2025 = await store.addCategory({ name: 'Năm 2025', color: 'slate', icon: 'gift' });
 
   const plan = [
     { categoryId: save, name: 'Quỹ khẩn cấp', target: 60000000, tag: 'An toàn', deadline: dateAhead(150), created: 180,
@@ -32,7 +33,7 @@ export async function seedDemo(store) {
       moves: [[110, 20000000], [80, 10000000], [50, -5000000], [20, 15000000]] },
     { categoryId: invest, name: 'Cổ phiếu ngân hàng', target: 50000000, tag: 'Chứng khoán', created: 90,
       moves: [[85, 10000000], [45, 6000000]] },
-    { categoryId: travel, name: 'Hà Giang', target: 5000000, created: 400, archived: true,
+    { categoryId: done2025, name: 'Hà Giang', target: 5000000, created: 400,
       moves: [[390, 3000000], [300, 2000000]] },
   ];
 
@@ -42,6 +43,6 @@ export async function seedDemo(store) {
       deadline: p.deadline ?? null, note: '', createdAt: daysAgo(p.created),
     });
     for (const [ago, amount] of p.moves) await store.addEntry(id, { amount, date: dateAgo(ago), note: '' });
-    if (p.archived) await store.setArchived(id, true);
   }
+  await store.setCategoryArchived(done2025, true);
 }

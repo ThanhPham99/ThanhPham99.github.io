@@ -9,7 +9,8 @@ service cloud.firestore {
     }
     function validCategory(d) {
       return d.name is string && d.name.size() > 0 && d.name.size() <= 60
-        && d.color is string && d.icon is string && d.order is number;
+        && d.color is string && d.icon is string && d.order is number
+        && (!('archived' in d) || d.archived is bool);
     }
     function validItem(d) {
       return d.categoryId is string

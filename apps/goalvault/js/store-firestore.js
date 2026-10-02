@@ -8,7 +8,7 @@ import { applyDelta, entryType, normalizeTag, roundNum, todayStr } from './domai
 const BATCH_LIMIT = 450;
 const toMs = (v) => (typeof v?.toMillis === 'function' ? v.toMillis() : typeof v === 'number' ? v : Date.now());
 const readDoc = (snap) => ({ id: snap.id, ...snap.data({ serverTimestamps: 'estimate' }) });
-const toCategory = (d) => ({ ...d, createdAt: toMs(d.createdAt) });
+const toCategory = (d) => ({ ...d, archived: !!d.archived, createdAt: toMs(d.createdAt) });
 const toItem = (d) => ({
   ...d, tag: d.tag ?? null, deadline: d.deadline ?? null, note: d.note ?? '', archived: !!d.archived,
   createdAt: toMs(d.createdAt), updatedAt: toMs(d.updatedAt),
@@ -79,11 +79,14 @@ export function createFirestoreStore(db, uid) {
     addCategory({ name, color, icon }) {
       const ref = doc(categoriesCol);
       const order = Math.max(-1, ...latest.categories.map((c) => c.order ?? 0)) + 1;
-      write((b) => b.set(ref, { name: name.trim(), color, icon, order, createdAt: serverTimestamp() }));
+      write((b) => b.set(ref, { name: name.trim(), color, icon, order, archived: false, createdAt: serverTimestamp() }));
       return ref.id;
     },
     updateCategory(categoryId, { name, color, icon }) {
       write((b) => b.update(doc(categoriesCol, categoryId), { name: name.trim(), color, icon }));
+    },
+    setCategoryArchived(categoryId, archived) {
+      write((b) => b.update(doc(categoriesCol, categoryId), { archived }));
     },
     reorderCategories(ids) {
       write((b) => ids.forEach((id, order) => b.update(doc(categoriesCol, id), { order })));
@@ -127,9 +130,6 @@ export function createFirestoreStore(db, uid) {
         changeCurrent(b, itemId, delta);
         b.set(doc(entriesCol(itemId)), { amount: delta, date: todayStr(), note, type: 'adjust', createdAt: serverTimestamp() });
       });
-    },
-    setArchived(itemId, archived) {
-      write((b) => b.update(itemRef(itemId), { archived, updatedAt: serverTimestamp() }));
     },
     async deleteItem(itemId) {
       const s = await getDocs(entriesCol(itemId));

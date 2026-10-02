@@ -71,7 +71,7 @@ export function createMemoryStore() {
     async addCategory({ name, color, icon }) {
       const id = nextId('c');
       const order = Math.max(-1, ...categories.map((c) => c.order)) + 1;
-      categories.push({ id, name: name.trim(), color, icon, order, createdAt: Date.now() });
+      categories.push({ id, name: name.trim(), color, icon, order, archived: false, createdAt: Date.now() });
       emit();
       return id;
     },
@@ -79,6 +79,12 @@ export function createMemoryStore() {
       const c = categories.find((x) => x.id === categoryId);
       if (!c) throw new Error('NOT_FOUND');
       Object.assign(c, { name: name.trim(), color, icon });
+      emit();
+    },
+    async setCategoryArchived(categoryId, archived) {
+      const c = categories.find((x) => x.id === categoryId);
+      if (!c) throw new Error('NOT_FOUND');
+      c.archived = archived;
       emit();
     },
     async reorderCategories(ids) {
@@ -121,10 +127,6 @@ export function createMemoryStore() {
       it.current = applyDelta(it.current, delta);
       it.updatedAt = Date.now();
       pushEntry(itemId, { amount: delta, date: todayStr(), note, type: 'adjust' });
-      emit();
-    },
-    async setArchived(itemId, archived) {
-      Object.assign(findItem(itemId), { archived, updatedAt: Date.now() });
       emit();
     },
     async deleteItem(itemId) {

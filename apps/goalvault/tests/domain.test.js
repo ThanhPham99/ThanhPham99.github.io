@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   applyDelta, averageProgress, formatDate, formatShortDate, formatInput, formatNumber, formatPct, groupCategoryItems, itemStatus,
-  normalizeTag, overviewKpis, parseNumber, progress, tagsOf, todayStr, validateItemInput,
+  activeCategories, activeItems, normalizeTag, overviewKpis, parseNumber, progress, tagsOf, todayStr, validateItemInput,
 } from '../js/domain.js';
 
 const at = (y, m, d) => new Date(y, m - 1, d).getTime();
@@ -151,4 +151,18 @@ test('overviewKpis counts achieved and behind/overdue', () => {
   ], TODAY);
   assert.deepEqual({ total: k.total, achieved: k.achieved, behind: k.behind }, { total: 4, achieved: 1, behind: 2 });
   assert.equal(k.avg, (1 + 0.3 + 0.1 + 0.5) / 4);
+});
+
+test('only categories are archived: an archived category hides its goals; legacy goal flags are ignored', () => {
+  const state = {
+    categories: [{ id: 'c1', archived: false }, { id: 'c2', archived: true }, { id: 'c3' }],
+    items: [
+      item({ id: 'a', categoryId: 'c1' }),
+      item({ id: 'b', categoryId: 'c1', archived: true }),
+      item({ id: 'c', categoryId: 'c2' }),
+      item({ id: 'd', categoryId: 'c3' }),
+    ],
+  };
+  assert.deepEqual(activeCategories(state).map((c) => c.id), ['c1', 'c3']);
+  assert.deepEqual(activeItems(state).map((i) => i.id), ['a', 'b', 'd']);
 });

@@ -1,5 +1,5 @@
 // Overview: hero summary, attention list, average-progress trend, collapsible per-category goal sections.
-import { averageProgress, formatDate, formatShortDate, formatPct, groupCategoryItems, itemStatus, overviewKpis, todayStr } from '../domain.js';
+import { activeCategories, activeItems, averageProgress, formatDate, formatShortDate, formatPct, groupCategoryItems, itemStatus, overviewKpis, todayStr } from '../domain.js';
 import { createEntryCache } from '../entry-cache.js';
 import { averageSeries } from '../history.js';
 import { getLang, t } from '../i18n.js';
@@ -129,13 +129,13 @@ async function drawTrend(ctx, active, today) {
 export function renderOverview(ctx) {
   trend.chart?.destroy();
   trend.chart = null;
-  const { categories, items } = ctx.state;
+  const categories = activeCategories(ctx.state);
   if (!categories.length) {
     return emptyState('vault', t('overview.welcome'),
       h('button', { type: 'button', class: 'btn btn-primary', onclick: () => openCategoryForm(ctx) }, icon('plus', 'w-4 h-4'), t('category.new')));
   }
   const today = todayStr();
-  const active = items.filter((i) => !i.archived);
+  const active = activeItems(ctx.state);
   const kpi = overviewKpis(active, today);
   const rows = active.map((item) => ({ item, st: itemStatus(item, today) }));
   const attention = rows

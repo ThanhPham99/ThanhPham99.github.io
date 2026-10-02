@@ -1,17 +1,21 @@
 // Categories list (drag to reorder) and category detail (tag groups + standalone goals).
-import { averageProgress, formatPct, groupCategoryItems, normalizeTag } from '../domain.js';
+import { activeCategories, averageProgress, formatPct, groupCategoryItems, normalizeTag } from '../domain.js';
 import { t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { routeHref } from '../route.js';
-import { catIcon, confirmDialog, emptyState, h, icon, iconButton, safely } from './dom.js';
+import { actionSheet, catIcon, confirmDialog, emptyState, h, icon, iconButton, safely } from './dom.js';
 import { openCategoryForm, openItemForm, promptText } from './forms.js';
 import { itemCard } from './item-card.js';
 import { bar } from './progress.js';
 
 const collapsed = new Set();
-const activeItemsOf = (ctx, categoryId) => ctx.state.items.filter((i) => i.categoryId === categoryId && !i.archived);
+export const itemsOf = (ctx, categoryId) => ctx.state.items.filter((i) => i.categoryId === categoryId);
 
-async function deleteCategory(ctx, cat) {
+export function setCategoryArchived(ctx, cat, archived) {
+  return safely(() => ctx.store.setCategoryArchived(cat.id, archived));
+}
+
+export async function deleteCategory(ctx, cat) {
   const n = ctx.state.items.filter((i) => i.categoryId === cat.id).length;
   const ok = await confirmDialog(t('category.deleteConfirm', { name: cat.name, n }), { danger: true, okLabel: t('common.delete') });
   if (!ok) return;
@@ -20,9 +24,9 @@ async function deleteCategory(ctx, cat) {
 }
 
 function categoryRow(ctx, cat) {
-  const items = activeItemsOf(ctx, cat.id);
+  const items = itemsOf(ctx, cat.id);
   const avg = averageProgress(items);
-  return h('div', { class: 'card flex items-center gap-2', 'data-id': cat.id },
+  return h('div', { class: 'card flex items-center gap-1', 'data-id': cat.id },
     h('span', { class: 'drag-handle cursor-grab touch-none text-slate-400 -ml-1 p-1', title: t('category.dragHint') }, icon('grip-vertical', 'w-4 h-4')),
     h('a', { href: routeHref('category', cat.id), class: 'flex-1 min-w-0 flex items-center gap-3' },
       catIcon(cat),
@@ -32,12 +36,21 @@ function categoryRow(ctx, cat) {
           h('span', { class: 'text-sm font-semibold tabular-nums' }, formatPct(avg))),
         bar(avg, colorHex(cat.color)),
         h('p', { class: 'text-xs text-slate-500 dark:text-slate-400' }, t('category.count', { n: items.length })))),
-    iconButton('pencil', () => openCategoryForm(ctx, cat), t('common.edit')),
-    iconButton('trash-2', () => deleteCategory(ctx, cat), t('common.delete')));
+    // Inline actions on wider screens; a single "more" button opening a sheet on phones keeps the name readable.
+    h('div', { class: 'hidden sm:flex items-center' },
+      iconButton('pencil', () => openCategoryForm(ctx, cat), t('common.edit')),
+      iconButton('archive', () => setCategoryArchived(ctx, cat, true), t('category.archive')),
+      iconButton('trash-2', () => deleteCategory(ctx, cat), t('common.delete'))),
+    h('div', { class: 'sm:hidden' },
+      iconButton('ellipsis-vertical', () => actionSheet(cat.name, [
+        { icon: 'pencil', label: t('common.edit'), onSelect: () => openCategoryForm(ctx, cat) },
+        { icon: 'archive', label: t('category.archive'), onSelect: () => setCategoryArchived(ctx, cat, true) },
+        { icon: 'trash-2', label: t('common.delete'), onSelect: () => deleteCategory(ctx, cat), danger: true },
+      ]), t('common.actions'))));
 }
 
 export function renderCategories(ctx) {
-  const { categories } = ctx.state;
+  const categories = activeCategories(ctx.state);
   const list = h('div', { class: 'space-y-3' }, categories.map((c) => categoryRow(ctx, c)));
   if (window.Sortable && categories.length > 1) {
     window.Sortable.create(list, {
@@ -87,17 +100,26 @@ export function renderCategoryDetail(ctx, categoryId) {
     queueMicrotask(() => { location.hash = routeHref('categories'); });
     return h('div');
   }
-  const items = activeItemsOf(ctx, cat.id);
+  const items = itemsOf(ctx, cat.id);
   const rows = groupCategoryItems(items);
+  const back = cat.archived ? 'archive' : 'categories';
   return h('section', { class: 'space-y-4' },
-    h('a', { href: routeHref('categories'), class: 'inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-brand-600' },
-      icon('arrow-left', 'w-4 h-4'), t('nav.categories')),
+    h('a', { href: routeHref(back), class: 'inline-flex items-center gap-1 text-sm muted hover:text-brand-600 min-h-11' },
+      icon('arrow-left', 'w-4 h-4'), t(`nav.${back}`)),
+    cat.archived
+      ? h('div', { class: 'flex items-center gap-3 rounded-2xl bg-amber-50 text-amber-900 dark:bg-amber-900/30 dark:text-amber-100 p-3 pl-4', 'data-archived-banner': 'true' },
+        icon('archive', 'w-5 h-5 shrink-0'),
+        h('p', { class: 'flex-1 text-sm font-medium' }, t('category.archivedBanner')),
+        h('button', { type: 'button', class: 'btn btn-sm bg-white text-amber-900 hover:bg-amber-100 dark:bg-amber-950 dark:text-amber-100', onclick: () => setCategoryArchived(ctx, cat, false) },
+          icon('archive-restore', 'w-4 h-4'), t('common.restore')))
+      : null,
     h('div', { class: 'flex items-center gap-3' },
       catIcon(cat),
       h('div', { class: 'flex-1 min-w-0' },
         h('h1', { class: 'text-xl font-bold truncate' }, cat.name),
         h('p', { class: 'text-sm text-slate-500 dark:text-slate-400' }, `${t('category.count', { n: items.length })} · ${formatPct(averageProgress(items))}`)),
       iconButton('pencil', () => openCategoryForm(ctx, cat), t('common.edit')),
+      cat.archived ? null : iconButton('archive', () => setCategoryArchived(ctx, cat, true), t('category.archive')),
       iconButton('trash-2', () => deleteCategory(ctx, cat), t('common.delete'))),
     bar(averageProgress(items), colorHex(cat.color)),
     h('button', { type: 'button', class: 'btn btn-primary w-full sm:w-auto', onclick: () => openItemForm(ctx, { categoryId: cat.id }) },

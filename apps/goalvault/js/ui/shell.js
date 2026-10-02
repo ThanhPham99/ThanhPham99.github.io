@@ -28,7 +28,9 @@ function userBadge(user) {
 }
 
 export function renderShell(ctx, content) {
-  const isActive = (name) => ctx.route.name === name || (name === 'categories' && ctx.route.name === 'category');
+  const viewing = ctx.route.name === 'category' ? ctx.state.categories.find((c) => c.id === ctx.route.id) : null;
+  const current = viewing ? (viewing.archived ? 'archive' : 'categories') : ctx.route.name;
+  const isActive = (name) => current === name;
   const sideLink = (n) => h('a', {
     href: routeHref(n.name),
     class: `flex items-center gap-3 px-3 h-11 rounded-xl font-medium transition ${isActive(n.name)

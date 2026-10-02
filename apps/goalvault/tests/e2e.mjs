@@ -157,12 +157,10 @@ const SCENARIOS = [
     check('category deleted', !hasText('Nghỉ hưu') && $$('#app [data-id]').length === 3);
     await go('#/category/c2');
     await click('Xóa', $('#app section > div'));
-    check('cascade count in confirm', hasText('và 4 mục tiêu', panel()), panel().textContent);
+    check('cascade count in confirm', hasText('và 3 mục tiêu', panel()), panel().textContent);
     await click('Xóa', panel()); await sleep(200);
     check('deleting from detail returns to list', location.hash === '#/categories');
     check('cascade removed goals', !$$('#app [data-id]').some((r) => r.textContent.includes('Du lịch')));
-    await go('#/archive');
-    check('archived goal of deleted category gone', !hasText('Hà Giang'));
     await go('#/category/does-not-exist'); await sleep(200);
     check('unknown category redirects', location.hash === '#/categories');
   `],
@@ -262,29 +260,45 @@ const SCENARIOS = [
     await click('Đặt giá trị', panel()); fill({ 0: '-5' }); await click('Lưu', panel());
     check('negative set value rejected', hasText('Không được nhỏ hơn 0.', panel()));
     fill({ 0: '60.000.000' }); await click('Lưu', panel());
-    check('archive prompt on reaching target', hasText('đã đạt mục tiêu', panel()));
-    check('adjust entry for set value', hasText('Điều chỉnh', $$('.modal-panel')[0]));
-    await click('Hủy', panel());
-    check('declining keeps it active', modals() === 1 && $('.chip', panel()).textContent === 'Đã đạt');
-    await click('Nạp / Rút', panel()); fill({ 0: '1' }); await click('Lưu', panel());
-    check('no second prompt while still achieved', modals() === 1);
-    await click('Lưu trữ', panel());
-    check('archive closes sheet', modals() === 0 && !hasText('Quỹ khẩn cấp'));
+    check('congratulation toast on reaching target', toasts().some((t) => t.includes('đã đạt mục tiêu')), toasts());
+    check('no archive prompt dialog', modals() === 1);
+    check('adjust entry for set value', hasText('Điều chỉnh', panel()));
+    check('achieved badge', $('.chip', panel()).textContent === 'Đã đạt');
+    check('goals have no archive button', !btn('Lưu trữ', panel()));
   `],
-  ['archive restore and permanent delete', DEMO, 1280, `
+  ['archive a category', DEMO, 1280, `
+    await go('#/categories');
+    const row = (name) => $$('#app [data-id]').find((r) => $('p', r)?.textContent === name);
+    check('archive button on each row', $$('#app [data-id]').every((r) => btn('Lưu trữ danh mục', r)));
+    await click('Lưu trữ danh mục', row('Du lịch'), 300);
+    check('archived category leaves the list', !row('Du lịch') && $$('#app [data-id]').length === 2);
+    await go('#/');
+    check('overview drops its section', !$$('[data-category-section] > button p').some((p) => p.textContent === 'Du lịch'));
+    check('overview excludes its goals', hasText('2/7 mục tiêu đã đạt', $('[data-hero]')), $('[data-hero]').textContent);
+    check('attention excludes its goals', $$('.attention-name').map((p) => p.textContent).join() === 'Bảo hiểm sức khỏe', $$('.attention-name').map((p) => p.textContent));
     await go('#/archive');
-    check('archived goal listed', hasText('Hà Giang') && hasText('Du lịch'));
-    await click('Khôi phục');
-    check('restored goal leaves archive', hasText('Chưa có mục tiêu nào được lưu trữ.'));
-    await go('#/category/c2');
-    check('restored goal back in category', hasText('Hà Giang'));
-    await openGoal('Hà Giang'); await click('Lưu trữ', panel());
+    const sec = (t) => $$('#app [data-section]').find((s) => s.dataset.section === t);
+    check('archive lists the category', hasText('Du lịch', sec('Danh mục')) && hasText('3 mục tiêu', sec('Danh mục')));
+    check('only categories in archive', hasText('Năm 2025', sec('Danh mục')) && !$$('#app .card.w-full').length);
+    $('a[href="#/category/c2"]', sec('Danh mục')).click(); await sleep(300);
+    check('archived category viewable with banner', hasText('Danh mục này đã được lưu trữ') && hasText('Đà Lạt'));
+    await click('Khôi phục', $('[data-archived-banner]'), 300);
+    check('restore from banner', !$('[data-archived-banner]'));
+    await go('#/categories');
+    check('restored category back in list', row('Du lịch'));
+    await go('#/category/c3');
+    await click('Lưu trữ danh mục', $('#app section > div'), 300);
+    check('archive from detail shows banner', $('[data-archived-banner]'));
     await go('#/archive');
-    await openGoal('Hà Giang');
-    check('archived detail offers restore', btn('Khôi phục', panel()));
-    await esc();
-    await click('Xóa'); await click('Xóa', panel());
-    check('deleted permanently', !hasText('Hà Giang'));
+    await click('Khôi phục', sec('Danh mục'), 300);
+    check('restore from archive tab', !hasText('Đầu tư', sec('Danh mục')));
+    await go('#/');
+    check('overview counts restored goals', hasText('2/10 mục tiêu đã đạt', $('[data-hero]')));
+    await go('#/categories');
+    await click('Lưu trữ danh mục', row('Đầu tư'), 300);
+    await go('#/archive');
+    await click('Xóa', sec('Danh mục')); await click('Xóa', panel(), 300);
+    check('delete archived category permanently', !hasText('Đầu tư') && hasText('Năm 2025'));
   `],
   ['empty account shows onboarding', DEMO, 1280, `
     await go('#/categories');
@@ -338,8 +352,6 @@ const SCENARIOS = [
     await esc();
     await go('#/category/c1');
     check('category page masked', hasText('******') && !hasText('30.000.000'));
-    await go('#/archive');
-    check('archive masked', hasText('******') && !hasText('5.000.000'));
     await go('#/');
     toggle().click(); await sleep(300);
     check('toggle back shows amounts', hasText('6.000.000') && !hasText('******') && localStorage.getItem('goalvault.hideAmounts') === '0');
@@ -372,6 +384,16 @@ const SCENARIOS = [
       await go(h); await sleep(300);
       check('no horizontal scroll ' + h, document.documentElement.scrollWidth <= innerWidth, [document.documentElement.scrollWidth, innerWidth]);
     }
+    await go('#/categories');
+    const firstRow = $$('#app [data-id]')[0];
+    const nameEl = $('p', firstRow);
+    check('category name not truncated on phone', nameEl.scrollWidth <= nameEl.clientWidth, [nameEl.scrollWidth, nameEl.clientWidth]);
+    await click('Thao tác', firstRow);
+    check('actions sheet offers edit/archive/delete', ['Sửa', 'Lưu trữ danh mục', 'Xóa'].every((l) => btn(l, panel())), panel()?.textContent);
+    await click('Lưu trữ danh mục', panel(), 300);
+    check('archive from actions sheet', modals() === 0 && $$('#app [data-id]').length === 2);
+    await go('#/category/c1');
+    check('bottom tab: archived category highlights Lưu trữ', $('nav a[href="#/archive"]').className.includes('text-brand-600'));
     const nav = $('nav');
     check('bottom tabs visible', nav && getComputedStyle(nav).display !== 'none');
     check('sidebar hidden', getComputedStyle($('aside')).display === 'none');

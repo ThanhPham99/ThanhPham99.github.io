@@ -74,6 +74,17 @@ export function iconButton(name, onclick, label) {
   }, icon(name));
 }
 
+// Bottom sheet listing actions (used where inline icon buttons would crowd a phone row).
+export function actionSheet(title, actions) {
+  openModal((api) => h('div', { class: 'space-y-2' },
+    modalHeader(title, api),
+    actions.map(({ icon: iconName, label, onSelect, danger = false }) => h('button', {
+      type: 'button', 'aria-label': label,
+      class: `w-full flex items-center gap-3 rounded-xl px-3 min-h-12 text-left font-medium transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${danger ? 'text-rose-600 dark:text-rose-400' : ''}`,
+      onclick: () => { api.close(); onSelect(); },
+    }, icon(iconName), label))));
+}
+
 export function modalHeader(title, api, subtitle) {
   return h('div', { class: 'flex items-start gap-3' },
     h('div', { class: 'flex-1 min-w-0' },

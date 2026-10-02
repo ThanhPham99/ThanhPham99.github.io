@@ -98,7 +98,7 @@ export function openItemForm(ctx, { categoryId, item = null }) {
     deadline: item?.deadline ?? '',
     note: item?.note ?? '',
   };
-  const tags = tagsOf(ctx.state.items.filter((i) => i.categoryId === categoryId && !i.archived));
+  const tags = tagsOf(ctx.state.items.filter((i) => i.categoryId === categoryId));
   let errors = {};
   const err = (key) => (errors[key] ? t(`error.${errors[key]}`) : null);
 

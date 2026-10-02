@@ -173,3 +173,14 @@ export function overviewKpis(items, today = todayStr()) {
     behind: statuses.filter((s) => s.behind || s.overdue).length,
   };
 }
+
+// Only whole categories are archived: an archived category hides itself and every goal inside it.
+// Goals carry a legacy `archived` flag from an earlier version; it is ignored.
+export function activeCategories(state) {
+  return state.categories.filter((c) => !c.archived);
+}
+
+export function activeItems(state) {
+  const archivedCats = new Set(state.categories.filter((c) => c.archived).map((c) => c.id));
+  return state.items.filter((i) => !archivedCats.has(i.categoryId));
+}

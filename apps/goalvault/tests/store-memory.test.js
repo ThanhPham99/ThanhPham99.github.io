@@ -95,13 +95,10 @@ test('deleteCategory removes its items and their entries', async () => {
   await assert.rejects(store.listEntries(gone), /NOT_FOUND/);
 });
 
-test('archive flag round-trips and deleteItem removes the item', async () => {
-  const { store, itemOf, get } = setup();
+test('deleteItem removes the item; goals cannot be archived on their own', async () => {
+  const { store, get } = setup();
   const id = await newItem(store);
-  await store.setArchived(id, true);
-  assert.equal(itemOf(id).archived, true);
-  await store.setArchived(id, false);
-  assert.equal(itemOf(id).archived, false);
+  assert.equal(store.setArchived, undefined);
   await store.deleteItem(id);
   assert.equal(get().items.length, 0);
 });
@@ -121,12 +118,28 @@ test('demo seed builds a consistent dataset', async () => {
   const { store, get } = setup();
   await seedDemo(store);
   const { categories, items } = get();
-  assert.deepEqual(categories.map((c) => c.id), ['c1', 'c2', 'c3']);
+  assert.deepEqual(categories.map((c) => c.id), ['c1', 'c2', 'c3', 'c4']);
+  assert.deepEqual(categories.map((c) => c.archived), [false, false, false, true]);
   assert.ok(items.length >= 10);
-  assert.ok(items.some((i) => i.archived));
+  assert.ok(items.every((i) => !i.archived));
+  assert.ok(items.some((i) => i.categoryId === 'c4'));
   for (const it of items) {
     const sum = (await store.listEntries(it.id)).reduce((s, e) => s + e.amount, 0);
     assert.ok(Math.abs(sum - it.current) < 1e-9, it.name);
     assert.ok(it.current >= 0, it.name);
   }
+});
+
+test('categories can be archived and restored without touching their goals', async () => {
+  const { store, get, itemOf } = setup();
+  const c = await store.addCategory({ name: 'A', color: 'sky', icon: 'wallet' });
+  const id = await newItem(store, { categoryId: c });
+  assert.equal(get().categories[0].archived, false);
+  await store.setCategoryArchived(c, true);
+  assert.equal(get().categories[0].archived, true);
+  assert.equal(itemOf(id).archived, false);
+  await store.updateCategory(c, { name: 'B', color: 'rose', icon: 'gift' });
+  assert.equal(get().categories[0].archived, true);
+  await store.setCategoryArchived(c, false);
+  assert.equal(get().categories[0].archived, false);
 });

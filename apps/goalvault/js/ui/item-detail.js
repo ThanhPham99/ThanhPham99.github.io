@@ -5,7 +5,7 @@ import { getLang, t } from '../i18n.js';
 import { colorHex } from '../presets.js';
 import { displayNumber } from '../privacy.js';
 import { lineChart } from './charts.js';
-import { confirmDialog, h, icon, iconButton, modalHeader, openModal, safely, showError } from './dom.js';
+import { confirmDialog, h, icon, iconButton, modalHeader, openModal, safely, showError, toast } from './dom.js';
 import { openEntryForm, openItemForm, openSetCurrent } from './forms.js';
 import { bulletBar, deadlineText, ring, statusBadge } from './progress.js';
 
@@ -22,10 +22,6 @@ export function openItemDetail(ctx, itemId) {
     chart?.destroy();
   });
 
-  const setArchived = async (item, archived) => {
-    await safely(() => ctx.store.setArchived(item.id, archived));
-    modal.close();
-  };
   const remove = async (item) => {
     const ok = await confirmDialog(t('item.deleteConfirm', { name: item.name }), { danger: true, okLabel: t('common.delete') });
     if (!ok) return;
@@ -35,10 +31,6 @@ export function openItemDetail(ctx, itemId) {
   const removeEntry = async (item, entry) => {
     const ok = await confirmDialog(t('entry.deleteConfirm'), { danger: true, okLabel: t('common.delete') });
     if (ok) await safely(() => ctx.store.deleteEntry(item.id, entry));
-  };
-  const promptArchive = async (item) => {
-    const ok = await confirmDialog(t('item.archivePrompt', { name: item.name }), { okLabel: t('item.archive') });
-    if (ok) await setArchived(item, true);
   };
 
   const statsGrid = (item, st, lang) => {
@@ -97,9 +89,6 @@ export function openItemDetail(ctx, itemId) {
         h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => openSetCurrent(ctx, item) }, icon('pencil-line', 'w-4 h-4'), t('item.setCurrent'))),
       h('div', { class: 'flex flex-wrap gap-2' },
         h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => openItemForm(ctx, { categoryId: item.categoryId, item }) }, icon('pencil', 'w-4 h-4'), t('common.edit')),
-        item.archived
-          ? h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => setArchived(item, false) }, icon('archive-restore', 'w-4 h-4'), t('common.restore'))
-          : h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => setArchived(item, true) }, icon('archive', 'w-4 h-4'), t('item.archive')),
         h('button', { type: 'button', class: 'btn btn-ghost btn-sm text-rose-600 dark:text-rose-400', onclick: () => remove(item) }, icon('trash-2', 'w-4 h-4'), t('common.delete'))),
       h('div', { class: 'space-y-3' },
         h('h3', { class: 'section-title' }, t('item.history')),
@@ -108,7 +97,7 @@ export function openItemDetail(ctx, itemId) {
     if (entries.length) {
       chart = lineChart(canvas, valueSeries(entries).map((p) => ({ label: formatShortDate(p.date, lang), title: formatDate(p.date, lang), value: p.value })), { color, target: item.target });
     }
-    if (wasAchieved === false && st.achieved && !item.archived) promptArchive(item);
+    if (wasAchieved === false && st.achieved) toast(t('item.achievedToast', { name: item.name }), 'success');
     wasAchieved = st.achieved;
   };
 
