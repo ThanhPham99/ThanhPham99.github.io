@@ -1,4 +1,4 @@
-// Core Shopee -> Shopee Affiliate conversion engine (pure client-side `an_redir`).
+// Core Shopee -> Shop Mòe Support Link engine (pure client-side `an_redir`).
 
 const AFFILIATE_ID = '17360400567';
 const AN_REDIR_ENDPOINT = 'https://s.shopee.vn/an_redir';
@@ -13,11 +13,24 @@ const NON_BUYER_SHOPEE_HOSTS = new Set([
   'doitac.shopee.vn',
 ]);
 
-const SEARCH_ALLOWED_PARAMS = new Set(['keyword', 'catId', 'Facet', 'page', 'sortBy', 'order', 'locations', 'minPrice', 'maxPrice', 'ratingFilter']);
+const SEARCH_ALLOWED_PARAMS = new Set([
+  'keyword',
+  'catId',
+  'Facet',
+  'page',
+  'sortBy',
+  'order',
+  'locations',
+  'minPrice',
+  'maxPrice',
+  'ratingFilter',
+]);
 
-const URL_CANDIDATE_RE = /https?:\/\/[^\s<>"[\]]+|(?<![a-zA-Z0-9._-])(?:(?:www|m|s|vn)\.)?(?:shopee\.vn|shp\.ee|shope\.ee)\/[^\s<>"[\]]*/gi;
+const URL_CANDIDATE_RE =
+  /https?:\/\/[^\s<>"[\]]+|(?<![a-zA-Z0-9._-])(?:(?:www|m|s|vn)\.)?(?:shopee\.vn|shp\.ee|shope\.ee)\/[^\s<>"[\]]*/gi;
 
 const shortUrlCache = new Map();
+const shortUrlTitleCache = new Map();
 
 function countChar(str, ch) {
   let count = 0;
@@ -28,8 +41,7 @@ function countChar(str, ch) {
 }
 
 /**
- * Splits trailing sentence punctuation off a URL token while preserving balanced parentheses/brackets
- * (e.g. `https://shopee.vn/Áo-(Mới)-i.1.2` keeps `)`, whereas `(https://shopee.vn/product/1/2)` drops `)`).
+ * Splits trailing sentence punctuation off a URL token while preserving balanced parentheses/brackets.
  */
 export function splitTrailingPunctuation(rawToken) {
   let urlPart = rawToken;
@@ -75,36 +87,101 @@ function parseUrlSafely(rawUrl) {
 }
 
 function extractProductIds(pathname) {
-  // 1. `/product/{shopid}/{itemid}`
   const directMatch = pathname.match(/^\/product\/(\d+)\/(\d+)(?:\/|$)/i);
   if (directMatch) {
-    return { shopId: directMatch[1], itemId: directMatch[2] };
+    return { shopId: directMatch[1], itemId: directMatch[2], slugTitle: null };
   }
 
-  // 2. `/<slug>-i.{shopid}.{itemid}` or `/i.{shopid}.{itemid}`
-  const slugMatch = pathname.match(/(?:^\/|-)i\.(\d+)\.(\d+)(?:\/|$)/i);
+  const slugMatch = pathname.match(/^\/(.*?)(?:^|-|\/)i\.(\d+)\.(\d+)(?:\/|$)/i);
   if (slugMatch) {
-    return { shopId: slugMatch[1], itemId: slugMatch[2] };
+    const rawSlug = slugMatch[1] || '';
+    const slugTitle = formatProductSlug(rawSlug);
+    return { shopId: slugMatch[2], itemId: slugMatch[3], slugTitle };
   }
 
   return null;
 }
 
-function describeOrigin(originUrl, itemType) {
+/**
+ * Converts a Shopee product URL slug (e.g. `%C3%81o-Thun-Nam-Form-R%E1%BB%99ng`) into a clean readable title.
+ */
+export function formatProductSlug(rawSlug) {
+  if (!rawSlug) return null;
+  let decoded = rawSlug;
+  try {
+    decoded = decodeURIComponent(rawSlug);
+  } catch {
+    // keep raw slug if malformed percent-encoding
+  }
+  const cleaned = decoded
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleaned || cleaned.length < 2 || /^product$/i.test(cleaned)) {
+    return null;
+  }
+  return cleaned.length > 96 ? `${cleaned.slice(0, 93).trim()}…` : cleaned;
+}
+
+/**
+ * Extracts a human-friendly product title from Shopee mobile share prose preceding a link, e.g.:
+ * "Hãy mua ngay sản phẩm Bàn phím cơ không dây với giá ưu đãi chỉ ₫699.000 trên Shopee! https://vn.shp.ee/..."
+ */
+export function extractTitleFromShareProse(proseBeforeUrl) {
+  if (!proseBeforeUrl) return null;
+  const lines = String(proseBeforeUrl)
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return null;
+
+  let candidate = lines[lines.length - 1];
+
+  const markdownLinkMatch = candidate.match(/\[([^\]]+)\]\(\s*$/);
+  if (markdownLinkMatch) {
+    candidate = markdownLinkMatch[1];
+  }
+
+  // Strip common Shopee share prefixes
+  candidate = candidate
+    .replace(/^(?:hãy\s+)?(?:mua|xem|săn|đặt|chốt)\s+ngay(?:\s+sản\s+phẩm)?\s+/i, '')
+    .replace(/^(?:mua|sản\s+phẩm|món|link\s+mua|đặt\s+mua)\s*[:\-–—]?\s+/i, '');
+
+  // Strip trailing Shopee share boilerplate ("với giá...", "mua ngay trên Shopee!", trailing prepositions)
+  candidate = candidate
+    .replace(/\s+(?:với\s+giá|giá\s+ưu\s+đãi|giá\s+chỉ|chỉ\s+từ|chỉ\s+còn)(?=\s|$|[.,!?:;₫]).*$/i, '')
+    .replace(/\.\s*mua\s+ngay\s+trên\s+shopee!?.*$/i, '')
+    .replace(/\s+(?:trên|tại|ở)\s+shopee!?.*$/i, '')
+    .replace(/\s+(?:tại\s+đây|ở\s+đây|tại|link)\s*[:\-–—]?\s*$/i, '')
+    .replace(/^[\s\-–—•*#\d.)([\]{}"“']+/, '')
+    .replace(/[\s\-–—:|•,!.?)([\]{}"”']+$/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!candidate || candidate.length < 3 || /^https?:\/\//i.test(candidate)) {
+    return null;
+  }
+  return candidate.length > 96 ? `${candidate.slice(0, 93).trim()}…` : candidate;
+}
+
+function describeOrigin(originUrl, itemType, slugTitle = null) {
+  if (slugTitle) return slugTitle;
   try {
     const u = new URL(originUrl);
     const prod = extractProductIds(u.pathname);
     if (prod) {
-      return `Sản phẩm #${prod.itemId}`;
+      return prod.slugTitle || 'Món hàng bạn chọn trên Shopee';
     }
     const cleanPath = decodeURIComponent(u.pathname).replace(/^\/+|\/+$/g, '');
-    if (!cleanPath) return 'Trang chủ Shopee';
+    if (!cleanPath) return 'Trang chủ Shopee Việt Nam';
     if (itemType === 'shop') {
       return `Gian hàng ${cleanPath.replace(/^shop\//i, '#')}`;
     }
-    return `shopee.vn/${cleanPath.length > 42 ? `${cleanPath.slice(0, 39)}…` : cleanPath}`;
+    return ` Sự kiện / Trang Shopee (${cleanPath.length > 36 ? `${cleanPath.slice(0, 33)}…` : cleanPath})`.trim();
   } catch {
-    return originUrl;
+    return 'Món hàng trên Shopee';
   }
 }
 
@@ -114,25 +191,25 @@ function describeOrigin(originUrl, itemType) {
  */
 export function normalizeShopeeOrigin(rawUrl, depth = 0) {
   if (depth > 4) {
-    return { kind: 'invalid', reason: 'Liên kết chuyển hướng lồng nhau quá nhiều tầng.' };
+    return { kind: 'invalid', reason: 'Đường dẫn chuyển hướng lồng nhau quá nhiều tầng.' };
   }
 
   const parsed = parseUrlSafely(rawUrl);
   if (!parsed) {
-    return { kind: 'invalid', reason: 'Định dạng đường dẫn không hợp lệ.' };
+    return { kind: 'invalid', reason: 'Định dạng đường dẫn chưa đúng.' };
   }
 
   const host = parsed.hostname.toLowerCase();
 
   if (NON_BUYER_SHOPEE_HOSTS.has(host)) {
-    return { kind: 'invalid', reason: 'Đây là trang quản trị hoặc hỗ trợ Shopee, không phải liên kết mua sắm.' };
+    return { kind: 'invalid', reason: 'Đây là trang quản trị Shopee, không phải trang mua hàng.' };
   }
 
-  // Existing `an_redir` link (e.g. `https://s.shopee.vn/an_redir?origin_link=...`)
+  // Existing `an_redir` link
   if ((SHORT_HOSTS.has(host) || host.endsWith('.shopee.vn')) && /^\/an_redir\/?$/i.test(parsed.pathname)) {
     const nestedOrigin = parsed.searchParams.get('origin_link');
     if (!nestedOrigin) {
-      return { kind: 'invalid', reason: 'Liên kết tiếp thị thiếu thông tin trang đích (origin_link).' };
+      return { kind: 'invalid', reason: 'Đường dẫn bị thiếu thông tin món hàng gốc.' };
     }
     let decoded = nestedOrigin;
     try {
@@ -149,7 +226,7 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
   if (SHORT_HOSTS.has(host)) {
     const slug = parsed.pathname.replace(/^\/+|\/+$/g, '');
     if (!slug) {
-      return { kind: 'invalid', reason: 'Liên kết rút gọn Shopee bị thiếu mã định danh.' };
+      return { kind: 'invalid', reason: 'Liên kết rút gọn Shopee bị thiếu mã sản phẩm.' };
     }
     return { kind: 'short', shortUrl: `https://${host}/${slug}${parsed.search}` };
   }
@@ -158,7 +235,6 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
   if (LANDING_HOSTS.has(host)) {
     let pathname = parsed.pathname || '/';
 
-    // Unwrap `/universal-link` wrapper paths or `?redir=...`
     if (/^\/universal-link(\/|$)/i.test(pathname)) {
       const redir = parsed.searchParams.get('redir') || parsed.searchParams.get('origin_link');
       if (redir) {
@@ -167,19 +243,22 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
       pathname = pathname.replace(/^\/universal-link/i, '') || '/';
     }
 
-    // 1. Product page with numeric shopId & itemId -> canonical short product path
+    // 1. Product page with numeric shopId & itemId
     const productIds = extractProductIds(pathname);
     if (productIds) {
       const originUrl = `https://shopee.vn/product/${productIds.shopId}/${productIds.itemId}`;
       return {
         kind: 'origin',
         originUrl,
+        itemId: productIds.itemId,
+        shopId: productIds.shopId,
         itemType: 'product',
-        label: describeOrigin(originUrl, 'product'),
+        hasCustomTitle: Boolean(productIds.slugTitle),
+        label: describeOrigin(originUrl, 'product', productIds.slugTitle),
       };
     }
 
-    // 2. Search page -> preserve only functional filter params, strip all tracking
+    // 2. Search page
     if (/^\/search\/?$/i.test(pathname)) {
       const cleanParams = new URLSearchParams();
       for (const [k, v] of parsed.searchParams.entries()) {
@@ -189,11 +268,13 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
       }
       const qs = cleanParams.toString();
       const originUrl = `https://shopee.vn/search${qs ? `?${qs}` : ''}`;
+      const kw = cleanParams.get('keyword');
       return {
         kind: 'origin',
         originUrl,
         itemType: 'page',
-        label: cleanParams.get('keyword') ? `Tìm kiếm "${cleanParams.get('keyword')}"` : 'Trang tìm kiếm Shopee',
+        hasCustomTitle: Boolean(kw),
+        label: kw ? `Tìm kiếm "${kw}" trên Shopee` : 'Trang tìm kiếm Shopee',
       };
     }
 
@@ -204,14 +285,16 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
         kind: 'origin',
         originUrl: 'https://shopee.vn',
         itemType: 'page',
-        label: 'Trang chủ Shopee',
+        hasCustomTitle: true,
+        label: 'Trang chủ Shopee Việt Nam',
       };
     }
 
     const segments = normalizedPath.slice(1).split('/');
     let itemType = 'page';
     if (
-      (segments.length === 1 && !['m', 'mall', 'flash_sale', 'campaigns', 'buyer', 'user', 'cart', 'blog'].includes(segments[0].toLowerCase())) ||
+      (segments.length === 1 &&
+        !['m', 'mall', 'flash_sale', 'campaigns', 'buyer', 'user', 'cart', 'blog'].includes(segments[0].toLowerCase())) ||
       (segments.length === 2 && segments[0].toLowerCase() === 'shop' && /^\d+$/.test(segments[1]))
     ) {
       itemType = 'shop';
@@ -224,20 +307,23 @@ export function normalizeShopeeOrigin(rawUrl, depth = 0) {
       kind: 'origin',
       originUrl,
       itemType,
-      label: describeOrigin(originUrl, itemType),
+      hasCustomTitle: itemType === 'shop',
+      label:
+        itemType === 'product'
+          ? `Món hàng tại gian hàng ${segments[0]}`
+          : describeOrigin(originUrl, itemType),
     };
   }
 
-  // Other Shopee regional domains (e.g. shopee.sg, shopee.com.my)
   if (/(^|\.)shopee\.[a-z.]+$/i.test(host)) {
-    return { kind: 'invalid', reason: `Chỉ hỗ trợ gian hàng Shopee Việt Nam (phát hiện tên miền ${host}).` };
+    return { kind: 'invalid', reason: `Shop Mòe hiện chỉ hỗ trợ Shopee Việt Nam (phát hiện ${host}).` };
   }
 
   return { kind: 'external' };
 }
 
 /**
- * Builds the Shopee Affiliate redirect link for a clean Origin Link.
+ * Builds the Shopee Affiliate support link for a clean Origin Link.
  */
 export function buildAffiliateUrl(originUrl) {
   return `${AN_REDIR_ENDPOINT}?origin_link=${encodeURIComponent(originUrl)}&affiliate_id=${AFFILIATE_ID}`;
@@ -246,7 +332,6 @@ export function buildAffiliateUrl(originUrl) {
 function extractShopeeUrlFromHtml(html) {
   if (!html || typeof html !== 'string') return null;
 
-  // Look for `an_redir?origin_link=...`, canonical/og:url, or product URL inside page markup
   const patterns = [
     /https?:\/\/s\.shopee\.vn\/an_redir\?[^\s"'<>]+/i,
     /<link[^>]+rel=["']canonical["'][^>]+href=["'](https?:\/\/shopee\.vn\/[^"']+)["']/i,
@@ -267,8 +352,7 @@ function extractShopeeUrlFromHtml(html) {
 }
 
 /**
- * Resolves a Shopee short URL (`vn.shp.ee`, `s.shopee.vn`, `shp.ee`, `shope.ee`) in browser environments
- * using public CORS-friendly redirect resolvers with short timeouts and in-memory caching.
+ * Resolves a Shopee short URL (`vn.shp.ee`, `s.shopee.vn`, `shp.ee`, `shope.ee`) in browser environments.
  */
 export async function defaultResolveShortUrl(shortUrl, { fetchImpl = globalThis.fetch, timeoutMs = 6500 } = {}) {
   if (shortUrlCache.has(shortUrl)) {
@@ -298,7 +382,6 @@ export async function defaultResolveShortUrl(shortUrl, { fetchImpl = globalThis.
   };
 
   const resolvers = [
-    // 1. unshorten.me JSON API
     () =>
       fetchJsonOrText(`https://unshorten.me/json/${encodeURIComponent(shortUrl)}`, (text) => {
         const data = JSON.parse(text);
@@ -307,7 +390,6 @@ export async function defaultResolveShortUrl(shortUrl, { fetchImpl = globalThis.
         }
         return null;
       }),
-    // 2. AllOrigins wrapper (exposes final redirected URL in `status.url` and body in `contents`)
     () =>
       fetchJsonOrText(`https://api.allorigins.win/get?url=${encodeURIComponent(shortUrl)}`, (text) => {
         const data = JSON.parse(text);
@@ -317,7 +399,6 @@ export async function defaultResolveShortUrl(shortUrl, { fetchImpl = globalThis.
         }
         return extractShopeeUrlFromHtml(data?.contents);
       }),
-    // 3. CodeTabs proxy fallback (scans redirected markup)
     () =>
       fetchJsonOrText(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(shortUrl)}`, (text) =>
         extractShopeeUrlFromHtml(text),
@@ -330,22 +411,26 @@ export async function defaultResolveShortUrl(shortUrl, { fetchImpl = globalThis.
       const check = normalizeShopeeOrigin(candidate);
       if (check.kind === 'origin') {
         shortUrlCache.set(shortUrl, check.originUrl);
+        if (check.hasCustomTitle && check.label) {
+          shortUrlTitleCache.set(shortUrl, check.label);
+        }
         return check.originUrl;
       }
     }
   }
 
   throw new Error(
-    'Không tự giải mã được liên kết rút gọn do giới hạn trình duyệt. Hãy mở liên kết gốc để sao chép đường dẫn đầy đủ trên shopee.vn.',
+    'Trình duyệt chưa tự mở được link rút gọn này. Bạn hãy bấm mở link gốc sang Shopee rồi copy lại đường dẫn trên thanh địa chỉ nhé!',
   );
 }
 
 export function clearShortUrlCache() {
   shortUrlCache.clear();
+  shortUrlTitleCache.clear();
 }
 
 /**
- * Scans `rawInput`, cleans and converts every Shopee URL inline while preserving non-Shopee URLs and prose.
+ * Scans `rawInput`, cleans and converts every Shopee URL inline while extracting friendly product names.
  */
 export async function convertInput(rawInput, { resolveShortUrl = defaultResolveShortUrl } = {}) {
   const source = String(rawInput ?? '');
@@ -353,6 +438,7 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
     return {
       mode: 'empty',
       isSingleBareLink: false,
+      isSingleItem: false,
       outputText: '',
       items: [],
       convertedCount: 0,
@@ -360,7 +446,6 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
     };
   }
 
-  // Collect candidate matches with exact character offsets
   const matches = [];
   URL_CANDIDATE_RE.lastIndex = 0;
   let match;
@@ -382,6 +467,7 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
     return {
       mode: 'none',
       isSingleBareLink: false,
+      isSingleItem: false,
       outputText: source,
       items: [],
       convertedCount: 0,
@@ -389,7 +475,6 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
     };
   }
 
-  // Deduplicate short-URL lookups across the same input batch
   const shortLookupPromises = new Map();
   for (const m of matches) {
     if (m.initial.kind === 'short' && !shortLookupPromises.has(m.initial.shortUrl)) {
@@ -409,7 +494,11 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
   let cursor = 0;
   let outputText = '';
 
-  for (const m of matches) {
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    const prevEnd = i === 0 ? 0 : matches[i - 1].end;
+    const proseSegmentBefore = source.slice(prevEnd, m.start);
+
     outputText += source.slice(cursor, m.start);
     let finalOrigin = m.initial;
 
@@ -418,11 +507,15 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
       if (outcome.ok) {
         const postCheck = normalizeShopeeOrigin(outcome.resolved);
         if (postCheck.kind === 'origin') {
-          finalOrigin = postCheck;
+          const cachedSlugTitle = shortUrlTitleCache.get(m.initial.shortUrl);
+          finalOrigin =
+            !postCheck.hasCustomTitle && cachedSlugTitle
+              ? { ...postCheck, hasCustomTitle: true, label: cachedSlugTitle }
+              : postCheck;
         } else {
           finalOrigin = {
             kind: 'invalid',
-            reason: 'Liên kết rút gọn không trỏ tới trang mua sắm hợp lệ trên shopee.vn.',
+            reason: 'Liên kết rút gọn không trỏ tới món hàng hợp lệ trên Shopee.',
           };
         }
       } else {
@@ -433,13 +526,23 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
     if (finalOrigin.kind === 'origin') {
       const affiliateUrl = buildAffiliateUrl(finalOrigin.originUrl);
       outputText += affiliateUrl;
+
+      let displayLabel = finalOrigin.label;
+      if (!finalOrigin.hasCustomTitle) {
+        const proseTitle = extractTitleFromShareProse(proseSegmentBefore);
+        if (proseTitle) {
+          displayLabel = proseTitle;
+        }
+      }
+
       items.push({
         originalUrl: m.rawToken,
         status: 'converted',
         originUrl: finalOrigin.originUrl,
+        itemId: finalOrigin.itemId || null,
         affiliateUrl,
         itemType: finalOrigin.itemType,
-        label: finalOrigin.label,
+        label: displayLabel,
       });
     } else {
       outputText += m.rawToken;
@@ -447,7 +550,7 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
         originalUrl: m.rawToken,
         status: 'error',
         isUnresolvedShort: Boolean(finalOrigin.isUnresolvedShort),
-        errorMessage: finalOrigin.reason || 'Liên kết Shopee không hợp lệ.',
+        errorMessage: finalOrigin.reason || 'Liên kết Shopee chưa hợp lệ.',
       });
     }
 
@@ -462,10 +565,12 @@ export async function convertInput(rawInput, { resolveShortUrl = defaultResolveS
   const trimmedSource = source.trim();
   const onlyMatch = matches.length === 1 ? matches[0] : null;
   const isSingleBareLink = Boolean(onlyMatch && trimmedSource === onlyMatch.rawToken);
+  const isSingleItem = items.length === 1;
 
   return {
-    mode: isSingleBareLink ? 'single' : 'multi',
+    mode: isSingleItem ? 'single' : 'multi',
     isSingleBareLink,
+    isSingleItem,
     outputText: isSingleBareLink && items[0]?.status === 'converted' ? items[0].affiliateUrl : outputText,
     items,
     convertedCount,

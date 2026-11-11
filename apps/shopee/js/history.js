@@ -1,4 +1,4 @@
-// Local conversion history store (capped at 20 recent conversions, persisted in localStorage).
+// Local Recent Items store (capped at 20 recent items, persisted in localStorage).
 
 const STORAGE_KEY = 'shopee_aff.history.v1';
 export const MAX_HISTORY_ITEMS = 20;
@@ -30,20 +30,38 @@ export function createHistoryStore(storage = globalThis.localStorage) {
       return readAll();
     },
 
-    add({ rawInput, outputText, label, convertedCount, firstAffiliateUrl, isSingleBareLink, createdAt = Date.now() }) {
+    add({
+      rawInput,
+      outputText,
+      label,
+      convertedCount,
+      firstAffiliateUrl,
+      isSingleBareLink,
+      isSingleItem,
+      createdAt = Date.now(),
+    }) {
       const trimmedOutput = String(outputText || '').trim();
       if (!trimmedOutput || !convertedCount) return readAll();
 
-      const existing = readAll().filter((entry) => entry.outputText !== trimmedOutput);
+      const dedupeKey = firstAffiliateUrl && (isSingleItem || convertedCount === 1) ? firstAffiliateUrl : trimmedOutput;
+      const existing = readAll().filter((entry) => {
+        const prevKey =
+          entry.firstAffiliateUrl && (entry.isSingleItem || entry.convertedCount === 1)
+            ? entry.firstAffiliateUrl
+            : entry.outputText;
+        return prevKey !== dedupeKey;
+      });
+
       const id = `${createdAt.toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
       const entry = {
         id,
         rawInput: String(rawInput || '').trim(),
         outputText: trimmedOutput,
-        label: label || (convertedCount > 1 ? `${convertedCount} liên kết Shopee` : 'Liên kết Shopee'),
+        label: label || (convertedCount > 1 ? `${convertedCount} món trên Shopee` : 'Món hàng trên Shopee'),
         convertedCount,
         firstAffiliateUrl: firstAffiliateUrl || null,
         isSingleBareLink: Boolean(isSingleBareLink),
+        isSingleItem: isSingleItem !== undefined ? Boolean(isSingleItem) : convertedCount === 1,
         createdAt,
       };
 

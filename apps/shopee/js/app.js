@@ -41,7 +41,7 @@ function showToast(message, variant = 'default') {
   }, 2200);
 }
 
-async function copyTextToClipboard(text, feedbackBtn = null) {
+async function copyTextToClipboard(text, feedbackBtn = null, successMsg = 'Đã copy link mua hàng!') {
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
@@ -61,7 +61,7 @@ async function copyTextToClipboard(text, feedbackBtn = null) {
       const labelSpan = feedbackBtn.querySelector('[data-copy-label]');
       if (labelSpan) {
         const prev = labelSpan.textContent;
-        labelSpan.textContent = 'Đã sao chép!';
+        labelSpan.textContent = 'Đã copy!';
         feedbackBtn.disabled = true;
         setTimeout(() => {
           labelSpan.textContent = prev;
@@ -69,17 +69,17 @@ async function copyTextToClipboard(text, feedbackBtn = null) {
         }, 1400);
       }
     }
-    showToast('Đã sao chép vào bộ nhớ tạm');
+    showToast(successMsg);
     return true;
   } catch {
-    showToast('Không thể tự động sao chép, vui lòng chọn và copy thủ công.', 'error');
+    showToast('Không thể tự động copy, vui lòng thử lại.', 'error');
     return false;
   }
 }
 
 function formatRelativeTime(timestamp) {
   const diffSec = Math.max(0, Math.floor((Date.now() - Number(timestamp || 0)) / 1000));
-  if (diffSec < 45) return 'Vừa xong';
+  if (diffSec < 45) return 'Vừa ghé xem';
   const diffMin = Math.floor(diffSec / 60);
   if (diffMin < 60) return `${diffMin} phút trước`;
   const diffHour = Math.floor(diffMin / 60);
@@ -98,7 +98,16 @@ function setLoading(isLoading) {
   convertBtn.disabled = isLoading;
   convertSpinner.classList.toggle('is-hidden', !isLoading);
   convertIcon.classList.toggle('is-hidden', isLoading);
-  convertBtnText.textContent = isLoading ? 'Đang xử lý…' : 'Chuyển đổi liên kết';
+  convertBtnText.textContent = isLoading ? 'Mòe đang gắn bùa…' : 'Ghé qua Tiệm Mòe';
+}
+
+function scrollResultIntoComfortView() {
+  requestAnimationFrame(() => {
+    const rect = resultSection.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight || rect.top < 16) {
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
 }
 
 function renderEmptyMatchNotice() {
@@ -113,16 +122,16 @@ function renderEmptyMatchNotice() {
         </svg>
       </div>
       <div class="status-body">
-        <p class="status-title">Không tìm thấy liên kết Shopee</p>
+        <p class="status-title">Mòe chưa thấy link Shopee nào ở đây cả</p>
         <p class="status-desc">
-          Hãy dán đường dẫn sản phẩm, gian hàng từ <code>shopee.vn</code>, <code>s.shopee.vn</code> hoặc <code>vn.shp.ee</code>.
+          Bạn hãy mở món hàng trên ứng dụng Shopee, bấm <strong>Chia sẻ → Sao chép đường dẫn</strong> rồi dán lại vào ô trên nhé!
         </p>
       </div>
     </div>
   `;
 }
 
-function renderSingleResult(item) {
+function renderSingleTicket(item) {
   if (item.status === 'error') {
     const safeHref = item.originalUrl.startsWith('http') ? item.originalUrl : `https://${item.originalUrl}`;
     resultSection.className = 'surface-card animate-reveal';
@@ -135,7 +144,7 @@ function renderSingleResult(item) {
           </svg>
         </div>
         <div class="status-body">
-          <p class="status-title status-title--error">Chưa thể chuyển đổi liên kết này</p>
+          <p class="status-title status-title--error">Mòe chưa mở được link rút gọn này</p>
           <p class="status-desc">${escapeHtml(item.errorMessage)}</p>
           ${
             item.isUnresolvedShort
@@ -144,9 +153,9 @@ function renderSingleResult(item) {
                     href="${escapeHtml(safeHref)}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="btn btn-secondary btn--md"
+                    class="btn btn-secondary btn--sm"
                   >
-                    <span>Mở liên kết gốc trên Shopee</span>
+                    <span>Mở món hàng trên Shopee để lấy link đầy đủ</span>
                     <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                       <polyline points="15 3 21 3 21 9" />
@@ -162,81 +171,106 @@ function renderSingleResult(item) {
     return;
   }
 
-  resultSection.className = 'surface-card animate-reveal';
+  resultSection.className = 'ticket-card animate-reveal';
   resultSection.innerHTML = `
-    <p class="result-eyebrow">Liên kết tiếp thị đã sẵn sàng</p>
-    <p class="result-target" title="${escapeHtml(item.originUrl)}">
-      ${escapeHtml(item.label)} <span class="result-target-domain">· ${escapeHtml(item.originUrl.replace(/^https?:\/\//, ''))}</span>
-    </p>
-
-    <input
-      id="single-output-url"
-      type="text"
-      readonly
-      value="${escapeHtml(item.affiliateUrl)}"
-      aria-label="Liên kết tiếp thị kết quả"
-      class="input-area url-output-field"
-    />
-
-    <div class="result-actions-grid">
-      <button id="copy-single-btn" type="button" class="btn btn-brand btn--lg">
-        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    <div class="ticket-top">
+      <span class="ticket-badge">
+        <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5" />
         </svg>
-        <span data-copy-label>Sao chép liên kết</span>
-      </button>
+        <span>Đã gắn bùa chúc phúc của Mòe</span>
+      </span>
 
+      <h2 id="ticket-product-title" class="ticket-item-name">${escapeHtml(item.label)}</h2>
+      <p class="ticket-assurance">
+        Giá bán, mã Freeship và Shopee Xu của bạn vẫn được giữ nguyên 100% khi thanh toán.
+      </p>
+    </div>
+
+    <div class="ticket-perforation" aria-hidden="true">
+      <div class="ticket-dashed-line"></div>
+    </div>
+
+    <div class="ticket-bottom">
       <a
         id="open-shopee-btn"
         href="${escapeHtml(item.affiliateUrl)}"
         target="_blank"
         rel="noopener noreferrer"
-        class="btn btn-secondary btn--lg"
+        class="btn btn-brand btn--xl cta-buy-full"
       >
-        <span>Mở trên Shopee</span>
-        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-          <polyline points="15 3 21 3 21 9" />
-          <line x1="10" x2="21" y1="14" y2="3" />
+        <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+        <span>Mở Shopee &amp; Chốt đơn ngay</span>
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </a>
+
+      <div class="ticket-sub-actions">
+        <button id="copy-single-btn" type="button" class="subtle-link-btn">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+          </svg>
+          <span data-copy-label>Copy link gửi bạn bè / mua sau</span>
+        </button>
+        <span class="subtle-dot" aria-hidden="true">·</span>
+        <button id="pick-another-btn" type="button" class="subtle-link-btn">
+          <span>Đổi sang món khác</span>
+        </button>
+      </div>
     </div>
   `;
 
-  const singleUrlInput = document.getElementById('single-output-url');
   const copySingleBtn = document.getElementById('copy-single-btn');
+  const pickAnotherBtn = document.getElementById('pick-another-btn');
 
-  singleUrlInput?.addEventListener('click', () => {
-    singleUrlInput.select();
-  });
   copySingleBtn?.addEventListener('click', () => {
-    copyTextToClipboard(item.affiliateUrl, copySingleBtn);
+    copyTextToClipboard(item.affiliateUrl, copySingleBtn, 'Đã copy link ủng hộ Mòe!');
+  });
+
+  pickAnotherBtn?.addEventListener('click', () => {
+    rawInputEl.value = '';
+    updateClearButtonVisibility();
+    resultSection.classList.add('is-hidden');
+    resultSection.innerHTML = '';
+    rawInputEl.focus();
   });
 }
 
-function renderMultiResult(res) {
+function renderMultiBasket(res) {
   const rowsHtml = res.items
     .map((item, idx) => {
       if (item.status === 'converted') {
         return `
-          <li class="breakdown-row">
+          <li class="basket-row">
             <div class="item-info">
               <p class="item-title">${escapeHtml(item.label)}</p>
-              <p class="item-sub">${escapeHtml(item.originUrl.replace(/^https?:\/\//, ''))}</p>
+              <p class="item-sub">Sẵn sàng mở trên Shopee · Giữ nguyên giá &amp; voucher</p>
             </div>
             <div class="row-actions">
-              <button type="button" data-item-copy="${idx}" class="btn btn-secondary btn--xs">
-                <span data-copy-label>Sao chép</span>
+              <button
+                type="button"
+                data-item-copy="${idx}"
+                class="btn btn-secondary btn--xs"
+                title="Copy link món này"
+              >
+                <span data-copy-label>Copy</span>
               </button>
               <a
                 href="${escapeHtml(item.affiliateUrl)}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="btn btn-secondary btn--xs"
-                title="Mở trên Shopee"
+                class="btn btn-brand btn--xs"
               >
-                <span>Mở</span>
+                <span>Mở mua</span>
+                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
               </a>
             </div>
           </li>
@@ -245,7 +279,7 @@ function renderMultiResult(res) {
 
       const safeHref = item.originalUrl.startsWith('http') ? item.originalUrl : `https://${item.originalUrl}`;
       return `
-        <li class="breakdown-row breakdown-row--error">
+        <li class="basket-row basket-row--error">
           <div class="item-info">
             <p class="item-title item-title--error">${escapeHtml(item.originalUrl)}</p>
             <p class="item-sub item-sub--wrap">${escapeHtml(item.errorMessage)}</p>
@@ -273,46 +307,30 @@ function renderMultiResult(res) {
   resultSection.innerHTML = `
     <div class="multi-header">
       <div class="multi-badges">
-        <h2 class="section-heading">Nội dung đã chuyển đổi</h2>
-        ${res.convertedCount > 0 ? `<span class="chip chip--brand">Đã đổi ${res.convertedCount} link</span>` : ''}
-        ${res.errorCount > 0 ? `<span class="chip chip--danger">${res.errorCount} link lỗi</span>` : ''}
+        <h2 class="section-heading">Giỏ đồ bạn vừa chọn</h2>
+        ${res.convertedCount > 0 ? `<span class="chip chip--brand">${res.convertedCount} món sẵn sàng</span>` : ''}
+        ${res.errorCount > 0 ? `<span class="chip chip--danger">${res.errorCount} link cần kiểm tra</span>` : ''}
       </div>
 
       ${
         res.convertedCount > 0
-          ? `<button id="copy-all-btn" type="button" class="btn btn-brand btn--md">
+          ? `<button id="copy-all-btn" type="button" class="btn btn-secondary btn--xs">
               <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
                 <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
               </svg>
-              <span data-copy-label>Sao chép toàn bộ</span>
+              <span data-copy-label>Copy cả danh sách</span>
             </button>`
           : ''
       }
     </div>
 
-    <textarea
-      id="multi-output-text"
-      rows="${Math.min(8, Math.max(3, res.outputText.split('\n').length))}"
-      readonly
-      aria-label="Nội dung đã thay liên kết tiếp thị"
-      class="input-area"
-    ></textarea>
-
-    <div class="items-breakdown">
-      <p class="breakdown-caption">Chi tiết từng liên kết (${res.items.length})</p>
-      <ul class="divided-list">${rowsHtml}</ul>
-    </div>
+    <ul id="multi-basket-list" class="divided-list">${rowsHtml}</ul>
   `;
-
-  const multiOutputEl = document.getElementById('multi-output-text');
-  if (multiOutputEl) {
-    multiOutputEl.value = res.outputText;
-  }
 
   const copyAllBtn = document.getElementById('copy-all-btn');
   copyAllBtn?.addEventListener('click', () => {
-    copyTextToClipboard(res.outputText, copyAllBtn);
+    copyTextToClipboard(res.outputText, copyAllBtn, 'Đã copy toàn bộ danh sách!');
   });
 
   resultSection.querySelectorAll('[data-item-copy]').forEach((btn) => {
@@ -345,41 +363,39 @@ function renderHistory() {
           type="button"
           data-history-load="${escapeHtml(entry.id)}"
           class="history-load-btn"
-          title="Nhấn để nạp lại nội dung này"
+          title="Nhấn để xem lại món này"
         >
-          <div class="history-load-top">
-            <span class="history-load-label">${escapeHtml(entry.label)}</span>
-            <span class="history-time">· ${escapeHtml(formatRelativeTime(entry.createdAt))}</span>
-          </div>
-          <p class="history-snippet">${escapeHtml(entry.rawInput)}</p>
+          <span class="history-load-label">${escapeHtml(entry.label)}</span>
+          <span class="history-meta">${escapeHtml(formatRelativeTime(entry.createdAt))}</span>
         </button>
 
         <div class="row-actions">
-          <button
-            type="button"
-            data-history-copy="${escapeHtml(entry.id)}"
-            class="btn btn-secondary btn--xs"
-          >
-            <span data-copy-label>Sao chép</span>
-          </button>
           ${
-            entry.isSingleBareLink && entry.firstAffiliateUrl
+            entry.firstAffiliateUrl
               ? `<a
                   href="${escapeHtml(entry.firstAffiliateUrl)}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="btn btn-secondary btn--xs"
+                  class="btn btn-soft-brand btn--xs"
                 >
-                  Mở
+                  Mua ngay
                 </a>`
               : ''
           }
           <button
             type="button"
+            data-history-copy="${escapeHtml(entry.id)}"
+            class="btn btn-secondary btn--xs"
+            title="Copy link"
+          >
+            <span data-copy-label>Copy</span>
+          </button>
+          <button
+            type="button"
             data-history-remove="${escapeHtml(entry.id)}"
             class="btn btn-secondary btn--icon-xs"
-            aria-label="Xóa mục lịch sử"
-            title="Xóa mục này"
+            aria-label="Xóa món này"
+            title="Xóa khỏi danh sách"
           >
             <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -392,12 +408,12 @@ function renderHistory() {
     .join('');
 }
 
-async function runConversion({ silentEmpty = false } = {}) {
+async function runConversion({ silentEmpty = false, autoScroll = true } = {}) {
   const input = rawInputEl.value;
   if (!input.trim()) {
     if (!silentEmpty) {
       rawInputEl.focus();
-      showToast('Hãy dán liên kết Shopee cần chuyển đổi.');
+      showToast('Bạn hãy dán link món hàng trên Shopee vào ô trước nhé!');
     } else {
       resultSection.classList.add('is-hidden');
       resultSection.innerHTML = '';
@@ -414,13 +430,18 @@ async function runConversion({ silentEmpty = false } = {}) {
 
     if (res.mode === 'none') {
       renderEmptyMatchNotice();
+      if (autoScroll) scrollResultIntoComfortView();
       return;
     }
 
-    if (res.isSingleBareLink && res.items.length === 1) {
-      renderSingleResult(res.items[0]);
+    if (res.isSingleItem && res.items.length === 1) {
+      renderSingleTicket(res.items[0]);
     } else {
-      renderMultiResult(res);
+      renderMultiBasket(res);
+    }
+
+    if (autoScroll) {
+      scrollResultIntoComfortView();
     }
 
     if (res.convertedCount > 0) {
@@ -428,15 +449,16 @@ async function runConversion({ silentEmpty = false } = {}) {
       const summaryLabel =
         res.convertedCount === 1 && firstConverted
           ? firstConverted.label
-          : `${res.convertedCount} liên kết (${firstConverted?.label || 'Shopee'})`;
+          : `Giỏ ${res.convertedCount} món (${firstConverted?.label || 'Shopee'})`;
 
       historyStore.add({
         rawInput: input,
-        outputText: res.outputText,
+        outputText: firstConverted && res.isSingleItem ? firstConverted.affiliateUrl : res.outputText,
         label: summaryLabel,
         convertedCount: res.convertedCount,
         firstAffiliateUrl: firstConverted?.affiliateUrl || null,
         isSingleBareLink: res.isSingleBareLink,
+        isSingleItem: res.isSingleItem,
       });
       renderHistory();
     }
@@ -459,7 +481,7 @@ rawInputEl.addEventListener('input', () => {
 rawInputEl.addEventListener('paste', () => {
   setTimeout(() => {
     updateClearButtonVisibility();
-    runConversion({ silentEmpty: true });
+    runConversion({ silentEmpty: true, autoScroll: true });
   }, 0);
 });
 
@@ -482,15 +504,15 @@ pasteBtn.addEventListener('click', async () => {
     const clip = await navigator.clipboard.readText();
     if (!clip || !clip.trim()) {
       rawInputEl.focus();
-      showToast('Bộ nhớ tạm hiện đang trống.');
+      showToast('Bộ nhớ tạm đang trống, hãy copy link món hàng từ Shopee trước nhé!');
       return;
     }
     rawInputEl.value = clip;
     updateClearButtonVisibility();
-    await runConversion();
+    await runConversion({ autoScroll: true });
   } catch {
     rawInputEl.focus();
-    showToast('Nhấn Ctrl+V (hoặc chạm giữ) vào ô nhập để dán.', 'error');
+    showToast('Chạm giữ vào ô nhập (hoặc nhấn Ctrl+V) để dán link Shopee nhé!', 'error');
   }
 });
 
@@ -528,8 +550,7 @@ historyListEl.addEventListener('click', (ev) => {
     if (entry) {
       rawInputEl.value = entry.rawInput;
       updateClearButtonVisibility();
-      runConversion();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      runConversion({ autoScroll: true });
     }
   }
 });
@@ -537,7 +558,7 @@ historyListEl.addEventListener('click', (ev) => {
 clearHistoryBtn.addEventListener('click', () => {
   historyStore.clear();
   renderHistory();
-  showToast('Đã xóa lịch sử chuyển đổi');
+  showToast('Đã xóa danh sách món vừa ghé xem');
 });
 
 themeToggleBtn.addEventListener('click', () => {
@@ -553,9 +574,11 @@ themeToggleBtn.addEventListener('click', () => {
 renderHistory();
 updateClearButtonVisibility();
 
-const queryUrl = new URLSearchParams(window.location.search).get('url') || new URLSearchParams(window.location.search).get('q');
+const queryUrl =
+  new URLSearchParams(window.location.search).get('url') ||
+  new URLSearchParams(window.location.search).get('q');
 if (queryUrl) {
   rawInputEl.value = queryUrl;
   updateClearButtonVisibility();
-  runConversion({ silentEmpty: true });
+  runConversion({ silentEmpty: true, autoScroll: false });
 }

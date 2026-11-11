@@ -11,40 +11,45 @@ function memoryStorage() {
   };
 }
 
-test('adds, deduplicates by outputText, removes, and caps at 20 items', () => {
+test('adds, deduplicates single-item visits by affiliate URL across bare & prose inputs, removes, and caps at 20', () => {
   const store = createHistoryStore(memoryStorage());
   assert.deepEqual(store.list(), []);
 
   store.add({
     rawInput: 'https://shopee.vn/product/1/2',
     outputText: 'https://s.shopee.vn/an_redir?origin_link=a&affiliate_id=17360400567',
-    label: 'Sản phẩm #2',
+    label: 'Món hàng #2',
     convertedCount: 1,
     firstAffiliateUrl: 'https://s.shopee.vn/an_redir?origin_link=a&affiliate_id=17360400567',
     isSingleBareLink: true,
+    isSingleItem: true,
     createdAt: 1000,
   });
 
-  // Re-adding identical output moves it to top instead of duplicating
+  // Re-adding same item via Shopee mobile share prose deduplicates and updates title/timestamp
   store.add({
-    rawInput: 'https://shopee.vn/product/1/2?sp_atk=x',
+    rawInput: 'Hãy mua ngay sản phẩm Tai nghe X trên Shopee! https://shopee.vn/product/1/2?sp_atk=x',
     outputText: 'https://s.shopee.vn/an_redir?origin_link=a&affiliate_id=17360400567',
-    label: 'Sản phẩm #2',
+    label: 'Tai nghe X',
     convertedCount: 1,
     firstAffiliateUrl: 'https://s.shopee.vn/an_redir?origin_link=a&affiliate_id=17360400567',
-    isSingleBareLink: true,
+    isSingleBareLink: false,
+    isSingleItem: true,
     createdAt: 2000,
   });
 
   assert.equal(store.list().length, 1);
   assert.equal(store.list()[0].createdAt, 2000);
+  assert.equal(store.list()[0].label, 'Tai nghe X');
 
   for (let i = 0; i < 25; i++) {
     store.add({
       rawInput: `https://shopee.vn/product/1/${i}`,
       outputText: `https://s.shopee.vn/an_redir?origin_link=${i}&affiliate_id=17360400567`,
-      label: `Sản phẩm #${i}`,
+      label: `Món hàng #${i}`,
       convertedCount: 1,
+      firstAffiliateUrl: `https://s.shopee.vn/an_redir?origin_link=${i}&affiliate_id=17360400567`,
+      isSingleItem: true,
       createdAt: 3000 + i,
     });
   }

@@ -2,4 +2,4 @@
 
 ## Contexts
 
-- [Shopee](./apps/shopee/GLOSSARY.md): chuyển đổi liên kết mua sắm Shopee sang liên kết tiếp thị liên kết cá nhân
+- [Shop Mòe](./apps/shopee/GLOSSARY.md): trạm ghé ngang giúp người mua chốt đơn Shopee đúng giá gốc và ủng hộ Mòe 0 đồng

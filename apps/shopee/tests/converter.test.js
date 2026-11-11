@@ -5,19 +5,23 @@ import {
   clearShortUrlCache,
   convertInput,
   defaultResolveShortUrl,
+  extractTitleFromShareProse,
+  formatProductSlug,
   normalizeShopeeOrigin,
   splitTrailingPunctuation,
 } from '../js/converter.js';
 
 const EXPECTED_SUFFIX = '&affiliate_id=17360400567';
 
-test('canonicalizes verbose Shopee product slug URLs and strips tracking params', () => {
+test('canonicalizes verbose Shopee product slug URLs, extracts readable title, and strips tracking params', () => {
   const raw =
     'https://shopee.vn/%C3%81o-Thun-Nam-Cotton-100-i.88201679.2147891023?sp_atk=9b21c&xptdk=11a&utm_source=an_999999999&uls_trackid=abc';
   const norm = normalizeShopeeOrigin(raw);
   assert.equal(norm.kind, 'origin');
   assert.equal(norm.itemType, 'product');
   assert.equal(norm.originUrl, 'https://shopee.vn/product/88201679/2147891023');
+  assert.equal(norm.label, 'Áo Thun Nam Cotton 100');
+  assert.equal(formatProductSlug('%C3%81o-Thun-Nam-Cotton-100'), 'Áo Thun Nam Cotton 100');
 
   const aff = buildAffiliateUrl(norm.originUrl);
   assert.equal(
@@ -52,6 +56,7 @@ test('unwraps someone else’s an_redir link and legacy universal-link offline',
   const norm = normalizeShopeeOrigin(otherAff);
   assert.equal(norm.kind, 'origin');
   assert.equal(norm.originUrl, 'https://shopee.vn/product/12345/67890');
+  assert.equal(norm.label, 'Ao khoac');
 
   const legacyUniversal =
     'https://shopee.vn/universal-link/product/555666/777888?deep_and_deferred=1&utm_source=an_888';
@@ -80,12 +85,34 @@ test('converts single bare link including protocol-less input in single mode', a
   const res = await convertInput('  shopee.vn/product/100/200?utm_source=old  ');
   assert.equal(res.mode, 'single');
   assert.equal(res.isSingleBareLink, true);
+  assert.equal(res.isSingleItem, true);
   assert.equal(res.convertedCount, 1);
   assert.equal(res.errorCount, 0);
   assert.equal(
     res.outputText,
     `https://s.shopee.vn/an_redir?origin_link=${encodeURIComponent('https://shopee.vn/product/100/200')}${EXPECTED_SUFFIX}`,
   );
+});
+
+test('treats Shopee mobile share text with 1 link as single-item mode and extracts product title from prose', async () => {
+  const shareMsg =
+    'Hãy mua ngay sản phẩm Bàn phím cơ không dây Aula F75 với giá ưu đãi chỉ ₫699.000 trên Shopee! https://vn.shp.ee/abc123';
+  assert.equal(
+    extractTitleFromShareProse(
+      'Hãy mua ngay sản phẩm Bàn phím cơ không dây Aula F75 với giá ưu đãi chỉ ₫699.000 trên Shopee! ',
+    ),
+    'Bàn phím cơ không dây Aula F75',
+  );
+
+  const res = await convertInput(shareMsg, {
+    resolveShortUrl: async () => 'https://shopee.vn/product/111/222',
+  });
+
+  assert.equal(res.mode, 'single');
+  assert.equal(res.isSingleItem, true);
+  assert.equal(res.isSingleBareLink, false);
+  assert.equal(res.convertedCount, 1);
+  assert.equal(res.items[0].label, 'Bàn phím cơ không dây Aula F75');
 });
 
 test('replaces multiple Shopee links inline in prose while leaving non-Shopee URLs untouched', async () => {
@@ -105,6 +132,7 @@ test('replaces multiple Shopee links inline in prose while leaving non-Shopee UR
 
   assert.equal(res.mode, 'multi');
   assert.equal(res.isSingleBareLink, false);
+  assert.equal(res.isSingleItem, false);
   assert.equal(res.convertedCount, 2);
   assert.equal(res.errorCount, 0);
 
@@ -124,6 +152,8 @@ test('never wraps unresolved short links into broken affiliate links and reports
     },
   });
 
+  assert.equal(res.mode, 'single');
+  assert.equal(res.isSingleItem, true);
   assert.equal(res.convertedCount, 0);
   assert.equal(res.errorCount, 1);
   assert.equal(res.outputText, 'Mua tại https://s.shopee.vn/deadlink ngay!');
@@ -132,7 +162,7 @@ test('never wraps unresolved short links into broken affiliate links and reports
   assert.match(res.items[0].errorMessage, /Không giải mã được/);
 });
 
-test('defaultResolveShortUrl falls back across resolvers and caches resolved origin', async () => {
+test('defaultResolveShortUrl falls back across resolvers, caches resolved origin, and preserves slug title', async () => {
   clearShortUrlCache();
   const requested = [];
   const fakeFetch = async (url) => {
@@ -159,6 +189,11 @@ test('defaultResolveShortUrl falls back across resolvers and caches resolved ori
   assert.equal(first, 'https://shopee.vn/product/777/888');
   assert.equal(second, 'https://shopee.vn/product/777/888');
   assert.equal(requested.length, 2);
+
+  const converted = await convertInput('https://vn.shp.ee/cached1', {
+    resolveShortUrl: (u) => defaultResolveShortUrl(u, { fetchImpl: fakeFetch }),
+  });
+  assert.equal(converted.items[0].label, 'Ban phim co');
 });
 
 test('rejects Shopee portal/admin links cleanly', async () => {
@@ -169,11 +204,12 @@ test('rejects Shopee portal/admin links cleanly', async () => {
 });
 
 test('is idempotent when re-converting an already-converted output and handles Markdown links', async () => {
-  const md = 'Xem [Áo khoác](https://shopee.vn/Ao-khoac-i.555.666?sp_atk=999) chính hãng';
+  const md = 'Xem [Áo khoác](https://shopee.vn/product/555/666?sp_atk=999) chính hãng';
   const once = await convertInput(md);
   const twice = await convertInput(once.outputText);
 
   const expectedUrl = buildAffiliateUrl('https://shopee.vn/product/555/666');
+  assert.equal(once.items[0].label, 'Áo khoác');
   assert.equal(once.outputText, `Xem [Áo khoác](${expectedUrl}) chính hãng`);
   assert.equal(twice.outputText, once.outputText);
 });

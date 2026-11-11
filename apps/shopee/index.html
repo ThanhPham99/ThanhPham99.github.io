@@ -4,19 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Chuyển đổi Link Shopee | Tiếp thị liên kết nhanh</title>
-  <meta name="description" content="Chuyển đổi nhanh đường dẫn sản phẩm, gian hàng hoặc bài đăng Shopee sang liên kết tiếp thị liên kết chuẩn.">
+  <title>Shop Mòe | Ghé ngang chốt đơn Shopee · Nuôi Mòe 0 đồng</title>
+  <meta name="description" content="Dán link món hàng Shopee vào Tiệm Mòe để mở sang Shopee chốt đơn giữ nguyên giá gốc, áp trọn voucher và ủng hộ Mòe 0 đồng.">
   <meta name="theme-color" content="#ee4d2d">
   <link rel="icon" href="https://avatars.githubusercontent.com/u/45620091?v=4">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Chuyển đổi Link Shopee">
-  <meta property="og:description" content="Dán link hoặc bài viết Shopee để chuyển sang liên kết tiếp thị liên kết tức thì.">
+  <meta property="og:title" content="Shop Mòe · Mua Shopee nuôi Mòe 0 đồng">
+  <meta property="og:description" content="Đằng nào cũng chốt đơn Shopee — ghé ngang Tiệm Mòe 3 giây, giá gốc không đổi 1 xu mà Mòe có thêm pate!">
+  <meta property="og:image" content="https://avatars.githubusercontent.com/u/45620091?v=4">
 
   <script>
     try {
       var savedTheme = localStorage.getItem('shopee_aff.theme');
-      if (savedTheme === 'dark' || (!savedTheme && matchMedia('(prefers-color-scheme: dark)').matches)) {
+      if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
       }
     } catch (e) { }
@@ -31,23 +32,7 @@
 <body>
   <div class="app-shell">
 
-    <header class="app-header">
-      <div class="brand-group">
-        <div class="brand-badge" aria-hidden="true">
-          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="brand-title">Chuyển đổi Link Shopee</h1>
-          <p class="brand-subtitle">
-            Dán đường dẫn hoặc bài viết có link Shopee để tạo liên kết tiếp thị tức thì.
-          </p>
-        </div>
-      </div>
-
+    <div class="topbar">
       <button
         id="theme-toggle-btn"
         type="button"
@@ -63,21 +48,66 @@
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
         </svg>
       </button>
+    </div>
+
+    <header class="store-hero">
+      <div class="avatar-wrap">
+        <div class="avatar-ring">
+          <img
+            src="https://avatars.githubusercontent.com/u/45620091?v=4"
+            alt="Avatar Mòe vui vẻ"
+            class="avatar-img"
+            width="80"
+            height="80"
+            onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%23fff3eb%22/%3E%3Cpath d=%22M20 34 L24 16 L35 26 Q40 24 45 26 L56 16 L60 34 Q63 44 58 53 Q50 63 40 63 Q30 63 22 53 Q17 44 20 34 Z%22 fill=%22%23ff8a65%22/%3E%3Ccircle cx=%2232%22 cy=%2241%22 r=%223.2%22 fill=%22%233e2723%22/%3E%3Ccircle cx=%2248%22 cy=%2241%22 r=%223.2%22 fill=%22%233e2723%22/%3E%3Cpath d=%22M36 48 Q40 52 44 48%22 stroke=%22%233e2723%22 stroke-width=%222.5%22 fill=%22none%22 stroke-linecap=%22round%22/%3E%3C/svg%3E';"
+          />
+        </div>
+        <span class="avatar-corner-badge" aria-hidden="true">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </span>
+      </div>
+
+      <h1 class="store-title">Shop Mòe</h1>
+      <p class="store-pitch">
+        Đằng nào cũng chốt đơn Shopee — ghé ngang Tiệm Mòe 3 giây,
+        <strong>giá gốc không đổi 1 xu</strong> mà Mòe có thêm pate!
+      </p>
     </header>
 
     <main class="workspace-stack">
+
+      <!-- Shopping Input Card -->
       <section class="surface-card" aria-labelledby="input-section-label">
+        <div class="steps-strip" aria-label="3 bước mua hàng ủng hộ Mòe">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <span class="step-text">Copy link món muốn mua trên Shopee</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <span class="step-text">Dán vào Tiệm Mòe để gắn bùa chúc phúc</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <span class="step-text">Mở Shopee áp mã &amp; chốt đơn như thường</span>
+          </div>
+        </div>
+
         <div class="field-header">
           <label id="input-section-label" for="raw-input" class="field-label">
-            Liên kết hoặc nội dung gốc
+            Món bạn đang muốn rước về
           </label>
           <div class="toolbar-actions">
-            <button id="paste-btn" type="button" class="btn btn-secondary btn--xs">
+            <button id="paste-btn" type="button" class="btn btn-soft-brand btn--xs">
               <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
               </svg>
-              <span>Dán nhanh</span>
+              <span>Dán link Shopee</span>
             </button>
             <button id="clear-btn" type="button" class="btn btn-secondary btn--xs is-hidden" title="Xóa nội dung">
               <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -90,45 +120,96 @@
 
         <textarea
           id="raw-input"
-          rows="4"
+          rows="3"
           class="input-area"
-          placeholder="Dán link sản phẩm (shopee.vn/..., vn.shp.ee/..., s.shopee.vn/...) hoặc cả bài đăng gom nhiều link vào đây..."
+          placeholder="Dán đường dẫn hoặc tin nhắn chia sẻ sản phẩm từ App Shopee vào đây..."
           spellcheck="false"
         ></textarea>
 
         <div class="action-footer">
           <p id="input-hint" class="hint-text">
-            Tự động chuyển đổi ngay khi dán và làm sạch các mã theo dõi cũ.
+            Tự động chuẩn bị vé mua hàng ngay khi bạn dán link.
           </p>
 
           <button id="convert-btn" type="button" class="btn btn-brand btn--lg">
             <span id="convert-spinner" class="spinner is-hidden" aria-hidden="true"></span>
             <svg id="convert-icon" class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+              <path d="M3 6h18" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
-            <span id="convert-btn-text">Chuyển đổi liên kết</span>
+            <span id="convert-btn-text">Ghé qua Tiệm Mòe</span>
           </button>
         </div>
       </section>
 
+      <!-- Result Checkout Ticket -->
       <section id="result-section" class="is-hidden" aria-live="polite"></section>
 
+      <!-- 3 Perks / Purchase Motivation -->
+      <section class="perks-grid" aria-label="Cam kết khi mua qua Shop Mòe">
+        <article class="perk-card">
+          <div class="perk-icon" aria-hidden="true">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="perk-title">Giá gốc 100%</h2>
+            <p class="perk-desc">Không đội giá dù chỉ 1 đồng so với khi bạn mở thẳng trên Shopee.</p>
+          </div>
+        </article>
+
+        <article class="perk-card">
+          <div class="perk-icon" aria-hidden="true">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+              <path d="M13 5v2M13 17v2M13 11v2" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="perk-title">Áp full Voucher</h2>
+            <p class="perk-desc">Dùng trọn vẹn mã Freeship, Shopee Xu và ưu đãi sẵn có trên máy bạn.</p>
+          </div>
+        </article>
+
+        <article class="perk-card">
+          <div class="perk-icon" aria-hidden="true">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="perk-title">Nuôi Mòe 0 đồng</h2>
+            <p class="perk-desc">Shopee tự trích hoa hồng tặng Mòe mua pate, nhận vạn lời chúc phúc!</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- Recent Items (Món bạn vừa ghé xem) -->
       <section id="history-section" class="surface-card is-hidden" aria-labelledby="history-heading">
         <div class="history-header">
           <div class="history-title-group">
-            <h2 id="history-heading" class="section-heading">Lịch sử gần đây</h2>
+            <h2 id="history-heading" class="section-heading">Món bạn vừa ghé xem</h2>
             <span id="history-count-badge" class="chip chip--brand">0</span>
           </div>
 
           <button id="clear-history-btn" type="button" class="text-danger-btn">
-            Xóa lịch sử
+            Xóa danh sách
           </button>
         </div>
 
         <ul id="history-list" class="divided-list"></ul>
       </section>
+
     </main>
+
+    <footer class="store-footer">
+      <p>
+        Cảm ơn bạn đã ghé Tiệm Mòe mua sắm! Muốn ném thẳng pate không cần chốt đơn?
+        <a href="/apps/nuoi-toi/">Ghé trang Nuôi Mòe →</a>
+      </p>
+    </footer>
   </div>
 
   <div id="toast-root" class="toast-stack" aria-live="polite"></div>

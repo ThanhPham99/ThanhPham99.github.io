@@ -1,16 +1,17 @@
-# Chuyển đổi Link Shopee (`apps/shopee`)
+# Shop Mòe (`apps/shopee`)
 
-Công cụ tĩnh chuyển đổi đường dẫn sản phẩm, gian hàng hoặc bài đăng chứa nhiều liên kết Shopee sang liên kết tiếp thị liên kết chuẩn `s.shopee.vn/an_redir`.
+Tiệm ghé ngang mua sắm Shopee ủng hộ **Mòe vui vẻ** 0 đồng — dán liên kết hoặc nội dung chia sẻ sản phẩm từ Shopee để mở sang Shopee chốt đơn giữ nguyên giá gốc, áp trọn voucher sẵn có và gửi hoa hồng từ nền tảng cho Mòe mua pate.
 
 - Tài liệu thuật ngữ miền: [GLOSSARY.md](./GLOSSARY.md)
 - Quyết định kiến trúc (ADR): [0001-client-side-an-redir-conversion.md](./docs/adr/0001-client-side-an-redir-conversion.md)
 
 ## Tính năng chính
 
-- **Tự động chuyển đổi khi dán**: Hỗ trợ dán 1 đường dẫn trần hoặc cả đoạn văn bản nhiều dòng chứa nhiều liên kết Shopee (giữ nguyên nội dung chữ và các liên kết ngoài Shopee).
-- **Làm sạch & chuẩn hóa trang đích**: Tự động gỡ bỏ toàn bộ tham số theo dõi cũ (`utm_*`, `sp_atk`, `xptdk`, `uls_trackid`, `universal-link`, `an_redir` của bên khác) và rút gọn đường dẫn sản phẩm về dạng chuẩn `https://shopee.vn/product/{shopid}/{itemid}`.
-- **Giải mã liên kết rút gọn**: Tự động giải mã `vn.shp.ee`, `s.shopee.vn`, `shp.ee`, `shope.ee` về trang đích trước khi bọc liên kết tiếp thị; cảnh báo rõ nếu liên kết không thể giải mã.
-- **Lịch sử cục bộ**: Lưu tối đa 20 lượt chuyển đổi gần nhất trong `localStorage` của trình duyệt.
+- **Luồng mua hàng trực quan (Vé Chốt Đơn)**: Dán 1 đường dẫn trần hoặc cả tin nhắn chia sẻ từ App Shopee (`"Hãy mua ngay sản phẩm ... trên Shopee! https://vn.shp.ee/..."`) để nhận ngay nút **Mở Shopee & Chốt đơn ngay** kèm tên món hàng dễ đọc, không phô bày chuỗi URL kỹ thuật rối mắt.
+- **Hỗ trợ giỏ nhiều món**: Khi dán bài tổng hợp từ 2 liên kết Shopee trở lên, hiển thị **Giỏ đồ bạn vừa chọn** với nút mở mua riêng cho từng món và tùy chọn sao chép toàn bộ danh sách.
+- **Làm sạch & chuẩn hóa trang đích**: Tự động gỡ bỏ tham số theo dõi cũ (`utm_*`, `sp_atk`, `xptdk`, `uls_trackid`, `universal-link`, `an_redir` khác) và chuẩn hóa đường dẫn sản phẩm về `https://shopee.vn/product/{shopid}/{itemid}`.
+- **Giải mã liên kết rút gọn**: Tự động giải mã `vn.shp.ee`, `s.shopee.vn`, `shp.ee`, `shope.ee` về trang đích mua sắm trước khi tạo liên kết ủng hộ.
+- **Món bạn vừa ghé xem**: Lưu tối đa 20 món gần nhất trong `localStorage` của trình duyệt để mở mua lại nhanh bất cứ lúc nào.
 
 ## Chạy local
 
