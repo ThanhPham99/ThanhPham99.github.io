@@ -122,8 +122,72 @@ textarea {
 /* Top bar & Storefront Hero */
 .topbar {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.storefront-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.4rem;
+  padding: 0 0.8rem 0 0.35rem;
+  border-radius: 9999px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 2px 8px -2px hsla(18, 30%, 12%, 0.06);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: border-color 0.16s ease, transform 0.18s var(--spring-ease), box-shadow 0.16s ease;
+}
+
+.storefront-pill:hover {
+  border-color: hsla(11, 85%, 54%, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -4px hsla(12, 75%, 36%, 0.15);
+}
+
+.storefront-pill:active {
+  transform: scale(0.985);
+}
+
+.storefront-pill-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background-color: var(--brand-soft);
+  color: var(--brand-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.storefront-pill-label {
+  white-space: nowrap;
+}
+
+.storefront-pill-sub {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding-left: 0.45rem;
+  border-left: 1px solid var(--border-hairline);
+  white-space: nowrap;
+}
+
+.storefront-pill-ext {
+  color: var(--text-muted);
+  transition: transform 0.18s ease, color 0.16s ease;
+}
+
+.storefront-pill:hover .storefront-pill-ext {
+  color: var(--brand-text);
+  transform: translate(1.5px, -1.5px);
 }
 
 .icon-toggle-btn {
@@ -134,6 +198,7 @@ textarea {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .theme-icon--sun {
@@ -945,10 +1010,10 @@ html.dark .theme-icon--moon {
 }
 
 .spinner {
-  width: 0.95rem;
-  height: 0.95rem;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid var(--brand-soft);
+  border-top-color: var(--brand-primary);
   border-radius: 9999px;
   animation: spinSmooth 0.65s linear infinite;
 }
@@ -966,7 +1031,11 @@ html.dark .theme-icon--moon {
 /* Responsive Breakpoints */
 @media (max-width: 640px) {
   .app-shell {
-    padding: 1.15rem 0.95rem 2.75rem;
+    padding: 1rem 0.95rem 2.75rem;
+  }
+
+  .storefront-pill-sub {
+    display: none;
   }
 
   .store-title {
@@ -990,12 +1059,12 @@ html.dark .theme-icon--moon {
   }
 
   .action-footer {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 0.6rem;
   }
 
-  .action-footer .btn-brand {
-    width: 100%;
+  .hint-text {
+    flex: 1 1 11rem;
   }
 
   .ticket-top {

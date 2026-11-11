@@ -98,7 +98,7 @@ function setLoading(isLoading) {
   convertBtn.disabled = isLoading;
   convertSpinner.classList.toggle('is-hidden', !isLoading);
   convertIcon.classList.toggle('is-hidden', isLoading);
-  convertBtnText.textContent = isLoading ? 'Mòe đang gắn bùa…' : 'Ghé qua Tiệm Mòe';
+  convertBtnText.textContent = isLoading ? 'Đang tạo link…' : 'Tạo link mua hàng';
 }
 
 function scrollResultIntoComfortView() {
@@ -408,7 +408,10 @@ function renderHistory() {
     .join('');
 }
 
+let inputDebounceTimer = null;
+
 async function runConversion({ silentEmpty = false, autoScroll = true } = {}) {
+  clearTimeout(inputDebounceTimer);
   const input = rawInputEl.value;
   if (!input.trim()) {
     if (!silentEmpty) {
@@ -472,13 +475,22 @@ async function runConversion({ silentEmpty = false, autoScroll = true } = {}) {
 // Event Listeners
 rawInputEl.addEventListener('input', () => {
   updateClearButtonVisibility();
-  if (!rawInputEl.value.trim()) {
+  clearTimeout(inputDebounceTimer);
+  const val = rawInputEl.value.trim();
+  if (!val) {
     resultSection.classList.add('is-hidden');
     resultSection.innerHTML = '';
+    return;
+  }
+  if (/(?:shopee\.vn|shp\.ee|shope\.ee)\//i.test(val)) {
+    inputDebounceTimer = setTimeout(() => {
+      runConversion({ silentEmpty: true, autoScroll: false });
+    }, 380);
   }
 });
 
 rawInputEl.addEventListener('paste', () => {
+  clearTimeout(inputDebounceTimer);
   setTimeout(() => {
     updateClearButtonVisibility();
     runConversion({ silentEmpty: true, autoScroll: true });
@@ -517,6 +529,7 @@ pasteBtn.addEventListener('click', async () => {
 });
 
 clearBtn.addEventListener('click', () => {
+  clearTimeout(inputDebounceTimer);
   activeJobId++;
   setLoading(false);
   rawInputEl.value = '';

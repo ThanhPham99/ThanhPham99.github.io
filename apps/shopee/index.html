@@ -33,6 +33,31 @@
   <div class="app-shell">
 
     <div class="topbar">
+      <a
+        id="storefront-link"
+        href="https://collshp.com/n/moevuive?view=storefront"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="storefront-pill"
+        title="Xem bộ sưu tập đồ Mòe chọn sẵn trên Shopee"
+      >
+        <span class="storefront-pill-icon" aria-hidden="true">
+          <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+            <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+            <path d="M2 7h20" />
+            <path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7" />
+          </svg>
+        </span>
+        <span class="storefront-pill-label">Ghé qua Tiệm Mòe</span>
+        <span class="storefront-pill-sub">Đồ Mòe gợi ý</span>
+        <svg class="icon-xs storefront-pill-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 17 17 7" />
+          <path d="M7 7h10v10" />
+        </svg>
+      </a>
+
       <button
         id="theme-toggle-btn"
         type="button"
@@ -73,7 +98,7 @@
 
       <h1 class="store-title">Shop Mòe</h1>
       <p class="store-pitch">
-        Đằng nào cũng chốt đơn Shopee — ghé ngang Tiệm Mòe 3 giây,
+        Đằng nào cũng chốt đơn Shopee — ghé ngang trạm Mòe 3 giây,
         <strong>giá gốc không đổi 1 xu</strong> mà Mòe có thêm pate!
       </p>
     </header>
@@ -89,7 +114,7 @@
           </div>
           <div class="step-item">
             <span class="step-num">2</span>
-            <span class="step-text">Dán vào Tiệm Mòe để gắn bùa chúc phúc</span>
+            <span class="step-text">Dán vào ô dưới để gắn bùa chúc phúc</span>
           </div>
           <div class="step-item">
             <span class="step-num">3</span>
@@ -128,17 +153,16 @@
 
         <div class="action-footer">
           <p id="input-hint" class="hint-text">
-            Tự động chuẩn bị vé mua hàng ngay khi bạn dán link.
+            Tự động tạo vé mua hàng ngay khi bạn dán link.
           </p>
 
-          <button id="convert-btn" type="button" class="btn btn-brand btn--lg">
+          <button id="convert-btn" type="button" class="btn btn-secondary btn--sm">
             <span id="convert-spinner" class="spinner is-hidden" aria-hidden="true"></span>
-            <svg id="convert-icon" class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-              <path d="M3 6h18" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
+            <svg id="convert-icon" class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            <span id="convert-btn-text">Ghé qua Tiệm Mòe</span>
+            <span id="convert-btn-text">Tạo link mua hàng</span>
           </button>
         </div>
       </section>

@@ -124,9 +124,16 @@ try {
   // 1. Initial Shop Mòe storefront state: no technical affiliate_id, Sub ID, or raw an_redir exposed
   const initialState = await evaluate(`
     const bodyText = document.body.innerText;
+    const sfLink = document.getElementById('storefront-link');
     return {
       h1Count: document.querySelectorAll('h1').length,
       h1Text: document.querySelector('h1')?.textContent.trim(),
+      storefrontHref: sfLink?.getAttribute('href'),
+      storefrontTarget: sfLink?.getAttribute('target'),
+      storefrontInTopbar: Boolean(sfLink?.closest('.topbar')),
+      storefrontText: sfLink?.innerText.trim(),
+      convertBtnText: document.getElementById('convert-btn-text')?.textContent.trim(),
+      convertBtnIsBrand: document.getElementById('convert-btn')?.classList.contains('btn-brand'),
       perksCount: document.querySelectorAll('.perk-card').length,
       stepsCount: document.querySelectorAll('.step-item').length,
       donateLinkHref: document.querySelector('.store-footer a')?.getAttribute('href'),
@@ -136,12 +143,18 @@ try {
   `);
   assert.equal(initialState.h1Count, 1);
   assert.equal(initialState.h1Text, 'Shop Mòe');
+  assert.equal(initialState.storefrontHref, 'https://collshp.com/n/moevuive?view=storefront');
+  assert.equal(initialState.storefrontTarget, '_blank');
+  assert.equal(initialState.storefrontInTopbar, true);
+  assert.match(initialState.storefrontText, /Ghé qua Tiệm Mòe/);
+  assert.equal(initialState.convertBtnText, 'Tạo link mua hàng');
+  assert.equal(initialState.convertBtnIsBrand, false, '#convert-btn must not compete visually with primary buy CTA');
   assert.equal(initialState.perksCount, 3);
   assert.equal(initialState.stepsCount, 3);
   assert.equal(initialState.donateLinkHref, '/apps/nuoi-toi/');
   assert.equal(initialState.hasTechnicalLeak, false, 'Visible UI must never expose affiliate_id, Sub ID, or an_redir');
   assert.equal(initialState.historyHidden, true);
-  console.log('✔ Initial Shop Mòe storefront state verified');
+  console.log('✔ Initial Shop Mòe storefront state & Tiệm Mòe topbar link verified');
 
   // 2. Single bare product link -> Checkout Ticket (Vé Chốt Đơn)
   const singleRes = await evaluate(`
@@ -156,6 +169,7 @@ try {
       productTitle: document.getElementById('ticket-product-title')?.textContent.trim(),
       openHref: document.getElementById('open-shopee-btn')?.getAttribute('href'),
       openText: document.getElementById('open-shopee-btn')?.innerText.trim(),
+      brandBtnCount: document.querySelectorAll('.btn-brand').length,
       hasCopyBtn: Boolean(document.getElementById('copy-single-btn')),
       historyVisible: !document.getElementById('history-section').classList.contains('is-hidden'),
       historyCount: document.getElementById('history-count-badge').textContent.trim(),
@@ -168,12 +182,13 @@ try {
   assert.equal(singleRes.productTitle, 'Bàn Phím Cơ Không Dây Aula F75');
   assert.equal(singleRes.openHref, expectedSingle);
   assert.match(singleRes.openText, /Mở Shopee & Chốt đơn ngay/);
+  assert.equal(singleRes.brandBtnCount, 1, 'Only #open-shopee-btn should have primary .btn-brand styling');
   assert.equal(singleRes.hasCopyBtn, true);
   assert.equal(singleRes.historyVisible, true);
   assert.equal(singleRes.historyCount, '1');
   assert.equal(singleRes.hasTechnicalLeak, false, 'Ticket view must keep technical URL hidden');
   await capture('01-desktop-ticket-light');
-  console.log('✔ Single-item Checkout Ticket & hidden technical URL verified');
+  console.log('✔ Single-item Checkout Ticket & sole primary CTA verified');
 
   // 3. Shopee mobile share prose with 1 link -> still renders Single Checkout Ticket with extracted title
   const mobileShareRes = await evaluate(`

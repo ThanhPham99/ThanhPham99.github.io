@@ -5,8 +5,12 @@ Trạm ghé ngang giúp người mua mở sản phẩm trên Shopee với nguyê
 ## Language
 
 **Shop Mòe**:
-Trang trung chuyển nơi người mua dán đường dẫn món hàng Shopee để mở sang ứng dụng Shopee chốt đơn ủng hộ Mòe 0 đồng.
+Trạm ghé ngang nơi người mua dán đường dẫn món hàng tự chọn trên Shopee để nhận vé chốt đơn ủng hộ Mòe 0 đồng.
 _Avoid_: Công cụ tạo link, trình đổi link affiliate, gian hàng bán lẻ
+
+**Tiệm Mòe (Collection Storefront)**:
+Trang trưng bày bộ sưu tập các món đồ Mòe tuyển chọn và gợi ý sẵn trên Shopee Collection (`collshp.com`), dành cho người mua muốn dạo xem đồ.
+_Avoid_: Nút tạo link, trang chuyển đổi
 
 **Nội dung chia sẻ (Shared Input)**:
 Đường dẫn hoặc đoạn tin nhắn sao chép từ ứng dụng Shopee hay mạng xã hội chứa một hoặc nhiều món hàng người mua đang quan tâm.
