@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Chuyển đổi Link Shopee | Tiếp thị liên kết nhanh</title>
+  <meta name="description" content="Chuyển đổi nhanh đường dẫn sản phẩm, gian hàng hoặc bài đăng Shopee sang liên kết tiếp thị liên kết chuẩn.">
+  <meta name="theme-color" content="#ee4d2d">
+  <link rel="icon" href="https://avatars.githubusercontent.com/u/45620091?v=4">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Chuyển đổi Link Shopee">
+  <meta property="og:description" content="Dán link hoặc bài viết Shopee để chuyển sang liên kết tiếp thị liên kết tức thì.">
+
+  <script>
+    try {
+      var savedTheme = localStorage.getItem('shopee_aff.theme');
+      if (savedTheme === 'dark' || (!savedTheme && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) { }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-badge" aria-hidden="true">
+          <svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Chuyển đổi Link Shopee</h1>
+          <p class="brand-subtitle">
+            Dán đường dẫn hoặc bài viết có link Shopee để tạo liên kết tiếp thị tức thì.
+          </p>
+        </div>
+      </div>
+
+      <button
+        id="theme-toggle-btn"
+        type="button"
+        class="btn btn-secondary icon-toggle-btn"
+        aria-label="Đổi giao diện sáng tối"
+        title="Đổi giao diện sáng / tối"
+      >
+        <svg class="icon-sm theme-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2m-7.07-14.93 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+        <svg class="icon-sm theme-icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      </button>
+    </header>
+
+    <main class="workspace-stack">
+      <section class="surface-card" aria-labelledby="input-section-label">
+        <div class="field-header">
+          <label id="input-section-label" for="raw-input" class="field-label">
+            Liên kết hoặc nội dung gốc
+          </label>
+          <div class="toolbar-actions">
+            <button id="paste-btn" type="button" class="btn btn-secondary btn--xs">
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+              </svg>
+              <span>Dán nhanh</span>
+            </button>
+            <button id="clear-btn" type="button" class="btn btn-secondary btn--xs is-hidden" title="Xóa nội dung">
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+              <span>Xóa</span>
+            </button>
+          </div>
+        </div>
+
+        <textarea
+          id="raw-input"
+          rows="4"
+          class="input-area"
+          placeholder="Dán link sản phẩm (shopee.vn/..., vn.shp.ee/..., s.shopee.vn/...) hoặc cả bài đăng gom nhiều link vào đây..."
+          spellcheck="false"
+        ></textarea>
+
+        <div class="action-footer">
+          <p id="input-hint" class="hint-text">
+            Tự động chuyển đổi ngay khi dán và làm sạch các mã theo dõi cũ.
+          </p>
+
+          <button id="convert-btn" type="button" class="btn btn-brand btn--lg">
+            <span id="convert-spinner" class="spinner is-hidden" aria-hidden="true"></span>
+            <svg id="convert-icon" class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+            <span id="convert-btn-text">Chuyển đổi liên kết</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="result-section" class="is-hidden" aria-live="polite"></section>
+
+      <section id="history-section" class="surface-card is-hidden" aria-labelledby="history-heading">
+        <div class="history-header">
+          <div class="history-title-group">
+            <h2 id="history-heading" class="section-heading">Lịch sử gần đây</h2>
+            <span id="history-count-badge" class="chip chip--brand">0</span>
+          </div>
+
+          <button id="clear-history-btn" type="button" class="text-danger-btn">
+            Xóa lịch sử
+          </button>
+        </div>
+
+        <ul id="history-list" class="divided-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast-root" class="toast-stack" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

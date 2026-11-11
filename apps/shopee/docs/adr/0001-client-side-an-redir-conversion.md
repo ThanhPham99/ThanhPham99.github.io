@@ -1,0 +1,3 @@
+# Chuyển đổi liên kết thuần trình duyệt qua cổng `an_redir` thay vì Shopee Affiliate Open API
+
+Vì toàn bộ kho mã được triển khai tĩnh trên GitHub Pages mà không vận hành máy chủ riêng, ứng dụng tạo Liên kết tiếp thị trực tiếp trên trình duyệt thông qua cấu trúc `https://s.shopee.vn/an_redir` (kết hợp các dịch vụ giải mã chuyển hướng công khai cho Liên kết rút gọn) thay vì gọi GraphQL `generateShortLink` của Shopee Affiliate Open API. Cách tiếp cận này giúp không làm lộ khóa bí mật (`App Secret`) phía client, loại bỏ chi phí duy trì Serverless Proxy/Worker riêng, đổi lại kết quả đầu ra là đường dẫn `an_redir` đầy đủ thay vì mã rút gọn ngắn `s.shopee.vn/xxxx`.
